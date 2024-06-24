@@ -94,7 +94,7 @@ df_output = pd.merge(
     how="inner",
 )
 
-df_input = merge_previous_race_data(df_horse, df_output, 3)
+df_input = merge_previous_race_data(df_horse, df_output, 5)
 
 # カラム名に接頭辞を追加
 prefix = "IN_"

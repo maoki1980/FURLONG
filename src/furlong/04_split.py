@@ -111,6 +111,18 @@ df_target["単勝"] = np.where(df_target["OUT_馬成績_着順"] == 1, 1, 0)
 df_target = df_target.copy()
 df_target["複勝"] = np.where(df_target["OUT_馬成績_着順"] <= 3, 1, 0)
 
+# 着順カテゴリを作成する
+conditions = [
+    df_target["OUT_馬成績_着順"].isna(),
+    df_target["OUT_馬成績_着順"] == 1,
+    df_target["OUT_馬成績_着順"] == 2,
+    df_target["OUT_馬成績_着順"] == 3,
+    (df_target["OUT_馬成績_着順"] >= 4) & (df_target["OUT_馬成績_着順"] <= 10),
+    df_target["OUT_馬成績_着順"] >= 11,
+]
+values = [0, 30, 25, 20, 5, 1]
+df_target["着順カテゴリ"] = np.select(conditions, values)
+
 # ファイル保存
 target_file_path = os.path.join(str(file_directory), "DF_TARGET.feather")
 features_file_path = os.path.join(str(file_directory), "DF_FEATURES.feather")

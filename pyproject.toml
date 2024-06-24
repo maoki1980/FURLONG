@@ -32,6 +32,7 @@ dependencies = [
     "matplotlib-fontja>=1.0.0",
     "optuna==3.5",
     "shap>=0.45.1",
+    "rankmetrics>=1.0.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
