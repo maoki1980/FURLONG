@@ -2,10 +2,10 @@ import os
 
 import lightgbm as lgb
 import matplotlib.pyplot as plt
-import matplotlib_fontja
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import shap
 from dotenv import load_dotenv
 from sklearn.metrics import (
     accuracy_score,
@@ -70,7 +70,7 @@ def plot_learning_curve(evals_result, metric, fold, output_dir):
 
     # Excelファイルとして保存
     df_learning_curve.to_excel(
-        os.path.join(output_dir, f"learning_curve_{metric}_fold_{fold + 1}.xlsx"),
+        os.path.join(output_dir, f"learning_curve_fold_{fold + 1}.xlsx"),
         index=False,
     )
 
@@ -78,10 +78,11 @@ def plot_learning_curve(evals_result, metric, fold, output_dir):
     plt.figure()
     plt.plot(x_axis, evals_result["valid_0"][metric], label="Validation")
     plt.legend()
+    plt.xlabel("iteration")
     plt.ylabel(f"{metric}")
     plt.title(f"Learning curve for {metric} (Fold {fold + 1})")
     plt.savefig(
-        os.path.join(output_dir, f"learning_curve_{metric}_fold_{fold + 1}.png"),
+        os.path.join(output_dir, f"learning_curve_fold_{fold + 1}.png"),
         dpi=300,
         bbox_inches="tight",
     )
@@ -144,7 +145,6 @@ def train_and_evaluate_model(
         [],
         [],
     )
-    fold_importance_df = pd.DataFrame()
     last_evals_result = None
     last_roc_curve_data = None
 
@@ -193,24 +193,19 @@ def train_and_evaluate_model(
         f2s.append(fbeta_score(y_valid, y_pred_classes, beta=2, average="binary"))
         log_losses.append(log_loss(y_valid, y_pred))
 
-        fold_importance_df[f"fold_{fold + 1}"] = model.feature_importance()
-
-        # 最終フォールドの学習曲線データを記録
+        # 最終foldのデータを記録
         if fold == skf.get_n_splits() - 1:
             last_evals_result = evals_result
             last_roc_curve_data = (fpr, tpr, roc_auc, fold)
 
-    # 最終フォールドの学習曲線をプロット
+    # 最終foldの学習曲線をプロット
     if last_evals_result:
         plot_learning_curve(last_evals_result, params["metric"], fold, output_dir)
 
-    # 最終フォールドのROC曲線をプロット
+    # 最終foldのROC曲線をプロット
     if last_roc_curve_data:
         fpr, tpr, roc_auc, fold = last_roc_curve_data
         plot_roc_curve(fpr, tpr, roc_auc, fold, output_dir)
-
-    features = X.columns
-    fold_importance_df.index = features
 
     return (
         accuracies,
@@ -222,7 +217,6 @@ def train_and_evaluate_model(
         best_thresholds,
         best_iterations,
         roc_aucs,
-        fold_importance_df,
     )
 
 
@@ -256,28 +250,64 @@ def display_metrics(metrics):
         print(f"CV {metric.replace('_', ' ').title()}: {mean:.4f} ± {std:.4f}")
 
 
-def plot_feature_importance(feature_importance_df, ranking, output_dir):
-    feature_importance_df = (
-        feature_importance_df.mean(axis=1).sort_values(ascending=False).reset_index()
-    )
-    feature_importance_df.columns = ["Feature", "Importance"]
+def calculate_feature_importance(model, feature_names, output_dir, top_n=20):
+    importance = model.feature_importance(importance_type="gain")
+    feature_importance_df = pd.DataFrame(
+        {"Feature": feature_names, "Importance": importance}
+    ).sort_values(by="Importance", ascending=False)
+
+    # Excel ファイルとして保存
     feature_importance_df.to_excel(
         os.path.join(output_dir, "feature_importance.xlsx"), index=False
     )
-    feature_importance_df = feature_importance_df.head(ranking)
 
-    matplotlib_fontja.japanize()
+    # プロット
     plt.figure(figsize=(10, 10))
-    sns.barplot(x="Importance", y="Feature", data=feature_importance_df)
-    plt.title(f"Feature Importance Top {ranking}")
+    sns.barplot(x="Importance", y="Feature", data=feature_importance_df.head(top_n))
+    plt.title(f"Top {top_n} Feature Importance")
     plt.xlabel("Importance")
     plt.ylabel("Feature")
     plt.savefig(
-        os.path.join(output_dir, f"feature_importance_top_{ranking}.png"),
+        os.path.join(output_dir, f"feature_importance_top_{top_n}.png"),
         dpi=300,
         bbox_inches="tight",
     )
     plt.show()
+
+    return feature_importance_df
+
+
+def calculate_shap_values(model, X, output_dir):
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X)
+
+    # SHAP詳細プロット
+    shap.summary_plot(shap_values, X, show=False)
+    plt.savefig(
+        os.path.join(output_dir, "shap_summary_plot.png"),
+        dpi=300,
+        bbox_inches="tight",
+    )
+    plt.show()
+
+    # Waterfallプロット (最も影響の大きい5つ)
+    for i in range(min(5, len(X))):
+        shap.waterfall_plot(
+            shap.Explanation(
+                values=shap_values[i],
+                base_values=explainer.expected_value,
+                data=X.iloc[i],
+            ),
+            show=False,
+        )
+        plt.savefig(
+            os.path.join(output_dir, f"shap_waterfall_plot_{i}.png"),
+            dpi=300,
+            bbox_inches="tight",
+        )
+        plt.show()
+
+    return shap_values
 
 
 def create_final_model(X, y, params, best_iterations):
@@ -443,6 +473,7 @@ def transform_columns(df):
     df = df[
         [
             "レースキー",
+            "IN_レースキー_場コード",
             "IN_レースキー_R",
             "IN_レース条件_グレード",
             "レース名",
@@ -460,6 +491,7 @@ def transform_columns(df):
 
     column_names = [
         "開催情報",
+        "レース場",
         "レース番号",
         "レースグレード",
         "レース名",
@@ -537,11 +569,9 @@ skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=RANDOM_SEED)
     best_thresholds,
     best_iterations,
     roc_aucs,
-    fold_importance_df,
 ) = train_and_evaluate_model(
     X, y, params, num_iterations, early_stopping_round, skf, pred_directory
 )
-
 
 # 評価結果の表示
 metrics = calculate_metrics(
@@ -557,11 +587,16 @@ metrics = calculate_metrics(
 )
 display_metrics(metrics)
 
-# 特徴量の重要度の可視化
-plot_feature_importance(fold_importance_df, 50, pred_directory)
-
 # 全データを用いて最終モデルを再学習する
 final_model = create_final_model(X, y, params, best_iterations)
+
+# Feature Importance の計算とプロット
+feature_importance_df = calculate_feature_importance(
+    final_model, X.columns, pred_directory
+)
+
+# SHAP値の計算とプロット
+shap_values = calculate_shap_values(final_model, X, pred_directory)
 
 # テストデータの予測
 y_test_pred_classes, y_test_pred = prepare_test_data(
