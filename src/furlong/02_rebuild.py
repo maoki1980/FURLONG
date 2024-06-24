@@ -349,7 +349,7 @@ summary_kab = summarize_object_columns(df_kab)
 df_kyi = read_df_file(str(file_directory), "KYI")
 
 
-df_kyi["馬番"] = df_kyi["馬番"].fillna("00").astype("category")
+df_kyi["馬番"] = df_kyi["馬番"].fillna(0).astype(int)
 df_kyi["血統登録番号"] = df_kyi["血統登録番号"].fillna(0).astype(int)
 
 df_kyi["IDM"] = pd.to_numeric(df_kyi["IDM"], errors="coerce")
@@ -661,7 +661,7 @@ summary_kyi = summarize_object_columns(df_kyi)
 df_sed = read_df_file(str(file_directory), "SED")
 
 
-df_sed["馬番"] = df_sed["馬番"].fillna("00").astype("category")
+df_sed["馬番"] = df_sed["馬番"].fillna(0).astype(int)
 df_sed["競走成績キー"] = df_sed["競走成績キー_血統登録番号"].fillna("") + df_sed[
     "競走成績キー_年月日"
 ].fillna("")

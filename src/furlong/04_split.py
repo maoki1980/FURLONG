@@ -50,6 +50,8 @@ project_path = "../../"
 env_file = os.getenv("ENV_FILE", os.path.join(project_path, ".env"))
 load_dotenv(env_file)
 file_directory = os.getenv("DF_DIR")
+since_date = int(os.getenv("DF_SINCE"))
+pred_date = int(os.getenv("PRED_DATE"))
 json_save_path = "../../"
 
 # 全データの読込み
@@ -59,7 +61,7 @@ df = pd.read_feather(read_file_path)
 # データの日付による絞り込み
 df["IN_年月日"] = pd.to_numeric(df["IN_年月日"], errors="coerce")
 df["IN_年月日"] = df["IN_年月日"].fillna(0).astype(int)
-df = df[df["IN_年月日"] >= 20150000].reset_index(drop=True)
+df = df[df["IN_年月日"] >= since_date].reset_index(drop=True)
 
 # 保存先JSONファイルパス
 save_json_path = os.path.join(str(json_save_path), "column_info.json")
@@ -95,25 +97,19 @@ feature_columns = [
 df_test = df[df["_merge"] != "both"].reset_index(drop=True)
 df_train = df[df["_merge"] == "both"].reset_index(drop=True)
 # 予測したい日付を抽出
-pred_day = 20240623
-df_test = df_test[df_test["IN_年月日"] == pred_day]
+df_test = df_test[df_test["IN_年月日"] == pred_date]
 # 目的変数データと説明変数データを抽出
 df_target = df_train[target_columns]
 df_features = df_train[feature_columns]
 df_test_features = df_test[feature_columns]
 
+# 1着の馬を1とする
+df_target = df_target.copy()
+df_target["単勝"] = np.where(df_target["OUT_馬成績_着順"] == 1, 1, 0)
+
 # 3着以内に入る馬を1とする
 df_target = df_target.copy()
-df_target["3着以内"] = np.where(df_target["OUT_馬成績_着順"] <= 3, 1, 0)
-
-# 順位カテゴリ (1～3位: 1, 4～10位: 2, 11位以下: 3)
-conditions = [
-    (df_target["OUT_馬成績_着順"] >= 1) & (df_target["OUT_馬成績_着順"] <= 3),
-    (df_target["OUT_馬成績_着順"] > 3) & (df_target["OUT_馬成績_着順"] <= 10),
-    (df_target["OUT_馬成績_着順"] > 10),
-]
-choices = [1, 2, 3]
-df_target["順位カテゴリ"] = np.select(conditions, choices, default=0)
+df_target["複勝"] = np.where(df_target["OUT_馬成績_着順"] <= 3, 1, 0)
 
 # ファイル保存
 target_file_path = os.path.join(str(file_directory), "DF_TARGET.feather")

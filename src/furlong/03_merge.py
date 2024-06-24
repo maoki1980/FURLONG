@@ -163,7 +163,6 @@ df["IN_レースキー"] = (
 # 数値に変換してソート
 df["IN_年月日"] = pd.to_numeric(df["IN_年月日"], errors="coerce").astype(int)
 df["IN_発走時間"] = pd.to_numeric(df["IN_発走時間"], errors="coerce").astype(int)
-df["IN_馬番"] = pd.to_numeric(df["IN_馬番"], errors="coerce").astype(int)
 df = df.sort_values(
     by=["IN_年月日", "IN_発走時間", "IN_馬番"], ascending=[False, True, True]
 ).reset_index(drop=True)
@@ -171,7 +170,6 @@ df = df.sort_values(
 # 数値を文字列に戻す
 df["IN_年月日"] = df["IN_年月日"].astype(str)
 df["IN_発走時間"] = df["IN_発走時間"].apply(lambda x: str(x).zfill(4))
-df["IN_馬番"] = df["IN_馬番"].apply(lambda x: str(x).zfill(2)).astype("category")
 
 df_summary = summarize_object_columns(df)
 
