@@ -15,19 +15,35 @@ aiosignal==1.3.1
     # via aiohttp
 alembic==1.13.1
     # via optuna
+annotated-types==0.7.0
+    # via pydantic
+anyio==4.4.0
+    # via httpx
+    # via openai
 asttokens==2.4.1
     # via stack-data
 attrs==23.2.0
     # via aiohttp
+    # via jsonschema
+    # via referencing
+beautifulsoup4==4.12.3
+    # via furlong
 blinker==1.8.2
     # via flask
+catboost==1.2.5
+    # via furlong
+category-encoders==2.6.3
+    # via pycaret
 certifi==2022.12.7
+    # via httpcore
+    # via httpx
     # via requests
 charset-normalizer==2.1.1
     # via requests
 click==8.1.7
     # via flask
 cloudpickle==3.0.0
+    # via pycaret
     # via shap
 colorama==0.4.6
     # via click
@@ -36,19 +52,39 @@ colorama==0.4.6
     # via tqdm
 colorlog==6.8.2
     # via optuna
+comm==0.2.2
+    # via ipywidgets
 contourpy==1.2.1
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
+    # via yellowbrick
+cython==3.0.10
+    # via pmdarima
+dash==2.17.1
+    # via plotly-resampler
+dash-core-components==2.0.0
+    # via dash
+dash-html-components==2.0.0
+    # via dash
+dash-table==5.0.0
+    # via dash
 decorator==5.1.1
     # via ipython
+deprecation==2.1.0
+    # via pycaret
+distro==1.9.0
+    # via openai
 et-xmlfile==1.1.0
     # via openpyxl
 executing==2.0.1
     # via stack-data
+fastjsonschema==2.20.0
+    # via nbformat
 filelock==3.13.1
     # via torch
 flask==3.0.3
+    # via dash
     # via furlong
 fonttools==4.53.0
     # via matplotlib
@@ -58,32 +94,69 @@ frozenlist==1.4.1
 fsspec==2024.2.0
     # via torch
     # via torch-geometric
+graphviz==0.20.3
+    # via catboost
 greenlet==3.0.3
+    # via playwright
     # via sqlalchemy
+h11==0.14.0
+    # via httpcore
+httpcore==1.0.5
+    # via httpx
+httpx==0.27.0
+    # via openai
 idna==3.4
+    # via anyio
+    # via httpx
     # via requests
     # via yarl
+imbalanced-learn==0.12.3
+    # via pycaret
+importlib-metadata==7.2.1
+    # via dash
+    # via pycaret
 intel-openmp==2021.4.0
     # via mkl
 ipython==8.25.0
+    # via ipywidgets
+    # via pycaret
     # via pyvis
+ipywidgets==8.1.3
+    # via pycaret
 itsdangerous==2.2.0
     # via flask
 jedi==0.19.1
     # via ipython
 jinja2==3.1.3
     # via flask
+    # via pycaret
     # via pyvis
     # via torch
     # via torch-geometric
-joblib==1.4.2
+joblib==1.3.2
+    # via imbalanced-learn
+    # via pmdarima
+    # via pycaret
+    # via pyod
     # via scikit-learn
+    # via scikit-plot
 jsonpickle==3.2.2
     # via pyvis
+jsonschema==4.22.0
+    # via nbformat
+jsonschema-specifications==2023.12.1
+    # via jsonschema
+jupyter-core==5.7.2
+    # via nbformat
+jupyterlab-widgets==3.0.11
+    # via ipywidgets
+kaleido==0.2.1
+    # via pycaret
 kiwisolver==1.4.5
     # via matplotlib
 lightgbm==4.4.0
     # via furlong
+    # via pycaret
 llvmlite==0.43.0
     # via numba
 mako==1.3.5
@@ -91,11 +164,17 @@ mako==1.3.5
 markupsafe==2.1.5
     # via jinja2
     # via mako
+    # via pycaret
     # via werkzeug
-matplotlib==3.9.0
+matplotlib==3.7.5
+    # via catboost
     # via furlong
     # via matplotlib-fontja
+    # via pycaret
+    # via pyod
+    # via scikit-plot
     # via seaborn
+    # via yellowbrick
 matplotlib-fontja==1.0.0
     # via furlong
 matplotlib-inline==0.1.7
@@ -107,65 +186,121 @@ mpmath==1.3.0
 multidict==6.0.5
     # via aiohttp
     # via yarl
+nbformat==5.10.4
+    # via pycaret
+nest-asyncio==1.6.0
+    # via dash
 networkx==3.2.1
     # via pyvis
     # via torch
 numba==0.60.0
+    # via pycaret
+    # via pyod
     # via shap
 numpy==1.26.3
+    # via catboost
+    # via category-encoders
     # via contourpy
+    # via imbalanced-learn
     # via lightgbm
     # via matplotlib
     # via numba
     # via optuna
     # via pandas
     # via patsy
+    # via plotly-resampler
+    # via pmdarima
     # via pyarrow
+    # via pycaret
+    # via pyod
     # via scikit-learn
     # via scipy
     # via seaborn
     # via shap
+    # via sktime
     # via statsmodels
+    # via tbats
     # via torch-geometric
     # via torchvision
+    # via tsdownsample
+    # via xgboost
+    # via yellowbrick
+openai==1.35.3
+    # via furlong
 openpyxl==3.1.4
     # via furlong
-optuna==3.5.0
+optuna==3.6.1
     # via furlong
+orjson==3.10.5
+    # via plotly-resampler
 packaging==22.0
+    # via deprecation
     # via matplotlib
     # via optuna
     # via plotly
+    # via pmdarima
     # via shap
+    # via sktime
     # via statsmodels
-pandas==2.2.2
+pandas==2.1.4
+    # via catboost
+    # via category-encoders
     # via furlong
+    # via plotly-resampler
+    # via pmdarima
+    # via pycaret
     # via seaborn
     # via shap
+    # via sktime
     # via statsmodels
 parso==0.8.4
     # via jedi
 patsy==0.5.6
+    # via category-encoders
     # via statsmodels
 pillow==10.2.0
     # via matplotlib
     # via torchvision
-plotly==5.22.0
+platformdirs==4.2.2
+    # via jupyter-core
+playwright==1.44.0
     # via furlong
+plotly==5.22.0
+    # via catboost
+    # via dash
+    # via furlong
+    # via plotly-resampler
+    # via pycaret
+plotly-resampler==0.10.0
+    # via pycaret
+pmdarima==2.0.4
+    # via pycaret
+    # via tbats
 polars==0.20.31
     # via furlong
 prompt-toolkit==3.0.47
     # via ipython
 psutil==6.0.0
+    # via pycaret
     # via torch-geometric
 pure-eval==0.2.2
     # via stack-data
 pyarrow==16.1.0
     # via furlong
+pycaret==3.3.2
+    # via furlong
+pydantic==2.7.4
+    # via openai
+pydantic-core==2.18.4
+    # via pydantic
+pyee==11.1.0
+    # via playwright
 pyg-lib==0.4.0+pt23cu121
     # via furlong
 pygments==2.18.0
     # via ipython
+pyod==2.0.1
+    # via pycaret
 pyparsing==3.1.2
     # via matplotlib
     # via torch-geometric
@@ -178,47 +313,105 @@ pytz==2024.1
     # via pandas
 pyvis==0.3.2
     # via furlong
+pywin32==306
+    # via jupyter-core
 pyyaml==6.0.1
     # via optuna
+referencing==0.35.1
+    # via jsonschema
+    # via jsonschema-specifications
 requests==2.28.1
-    # via torch-geometric
-scikit-learn==1.5.0
+    # via dash
     # via furlong
+    # via pycaret
+    # via torch-geometric
+retrying==1.3.4
+    # via dash
+rpds-py==0.18.1
+    # via jsonschema
+    # via referencing
+schemdraw==0.15
+    # via pycaret
+scikit-base==0.7.8
+    # via sktime
+scikit-learn==1.4.2
+    # via category-encoders
+    # via furlong
+    # via imbalanced-learn
+    # via pmdarima
+    # via pycaret
+    # via pyod
+    # via scikit-plot
     # via shap
+    # via sktime
+    # via tbats
     # via torch-geometric
-scipy==1.13.1
+    # via yellowbrick
+scikit-plot==0.3.7
+    # via pycaret
+scipy==1.11.4
+    # via catboost
+    # via category-encoders
     # via furlong
+    # via imbalanced-learn
     # via lightgbm
+    # via pmdarima
+    # via pycaret
+    # via pyod
     # via scikit-learn
+    # via scikit-plot
     # via shap
+    # via sktime
     # via statsmodels
+    # via tbats
     # via torch-cluster
     # via torch-geometric
     # via torch-sparse
+    # via xgboost
+    # via yellowbrick
 seaborn==0.13.2
     # via furlong
+setuptools==70.1.0
+    # via dash
+    # via pmdarima
 shap==0.45.1
     # via furlong
 six==1.16.0
     # via asttokens
+    # via catboost
     # via patsy
     # via python-dateutil
+    # via retrying
+sktime==0.26.0
+    # via pycaret
 slicer==0.0.8
     # via shap
+sniffio==1.3.1
+    # via anyio
+    # via httpx
+    # via openai
+soupsieve==2.5
+    # via beautifulsoup4
 sqlalchemy==2.0.31
     # via alembic
     # via optuna
 stack-data==0.6.3
     # via ipython
 statsmodels==0.14.2
+    # via category-encoders
     # via furlong
+    # via pmdarima
+    # via pycaret
 sympy==1.12
     # via torch
+tbats==1.1.3
+    # via pycaret
 tbb==2021.11.0
     # via mkl
-tenacity==8.4.1
+tenacity==8.4.2
     # via plotly
 threadpoolctl==3.5.0
+    # via imbalanced-learn
     # via scikit-learn
 torch==2.3.1+cu121
     # via furlong
@@ -239,23 +432,48 @@ torchaudio==2.3.1+cu121
 torchvision==0.18.1+cu121
     # via furlong
 tqdm==4.64.1
+    # via openai
     # via optuna
+    # via pycaret
     # via shap
     # via torch-geometric
 traitlets==5.14.3
+    # via comm
     # via ipython
+    # via ipywidgets
+    # via jupyter-core
     # via matplotlib-inline
+    # via nbformat
+tsdownsample==0.1.3
+    # via plotly-resampler
 typing-extensions==4.9.0
     # via alembic
+    # via dash
+    # via openai
+    # via pydantic
+    # via pydantic-core
+    # via pyee
     # via sqlalchemy
     # via torch
 tzdata==2024.1
     # via pandas
 urllib3==1.26.13
+    # via pmdarima
     # via requests
 wcwidth==0.2.13
     # via prompt-toolkit
 werkzeug==3.0.3
+    # via dash
     # via flask
+widgetsnbextension==4.0.11
+    # via ipywidgets
+xgboost==2.1.0
+    # via furlong
+xxhash==3.4.1
+    # via pycaret
 yarl==1.9.4
     # via aiohttp
+yellowbrick==1.5
+    # via pycaret
+zipp==3.19.2
+    # via importlib-metadata

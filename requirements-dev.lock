@@ -15,19 +15,56 @@ aiosignal==1.3.1
     # via aiohttp
 alembic==1.13.1
     # via optuna
+annotated-types==0.7.0
+    # via pydantic
+anyio==4.4.0
+    # via httpx
+    # via jupyter-server
+    # via openai
+argon2-cffi==23.1.0
+    # via jupyter-server
+argon2-cffi-bindings==21.2.0
+    # via argon2-cffi
+arrow==1.3.0
+    # via isoduration
 asttokens==2.4.1
     # via stack-data
+async-lru==2.0.4
+    # via jupyterlab
 attrs==23.2.0
     # via aiohttp
+    # via cattrs
+    # via jsonschema
+    # via lsprotocol
+    # via referencing
+babel==2.15.0
+    # via jupyterlab-server
+beautifulsoup4==4.12.3
+    # via furlong
+    # via nbconvert
+bleach==6.1.0
+    # via nbconvert
 blinker==1.8.2
     # via flask
+catboost==1.2.5
+    # via furlong
+category-encoders==2.6.3
+    # via pycaret
+cattrs==23.2.3
+    # via lsprotocol
+    # via python-lsp-ruff
 certifi==2022.12.7
+    # via httpcore
+    # via httpx
     # via requests
+cffi==1.16.0
+    # via argon2-cffi-bindings
 charset-normalizer==2.1.1
     # via requests
 click==8.1.7
     # via flask
 cloudpickle==3.0.0
+    # via pycaret
     # via shap
     # via spyder-kernels
 colorama==0.4.6
@@ -39,83 +76,201 @@ colorlog==6.8.2
     # via optuna
 comm==0.2.2
     # via ipykernel
+    # via ipywidgets
 contourpy==1.2.1
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
+    # via yellowbrick
+cython==3.0.10
+    # via pmdarima
+dash==2.17.1
+    # via plotly-resampler
+dash-core-components==2.0.0
+    # via dash
+dash-html-components==2.0.0
+    # via dash
+dash-table==5.0.0
+    # via dash
 debugpy==1.8.1
     # via ipykernel
 decorator==5.1.1
     # via ipython
+defusedxml==0.7.1
+    # via nbconvert
+deprecation==2.1.0
+    # via pycaret
+distro==1.9.0
+    # via openai
+docstring-to-markdown==0.15
+    # via python-lsp-server
 et-xmlfile==1.1.0
     # via openpyxl
 executing==2.0.1
     # via stack-data
+fastjsonschema==2.20.0
+    # via nbformat
 filelock==3.13.1
     # via torch
 flask==3.0.3
+    # via dash
     # via furlong
 fonttools==4.53.0
     # via matplotlib
+fqdn==1.5.1
+    # via jsonschema
 frozenlist==1.4.1
     # via aiohttp
     # via aiosignal
 fsspec==2024.2.0
     # via torch
     # via torch-geometric
+graphviz==0.20.3
+    # via catboost
 greenlet==3.0.3
+    # via playwright
     # via sqlalchemy
+h11==0.14.0
+    # via httpcore
+httpcore==1.0.5
+    # via httpx
+httpx==0.27.0
+    # via jupyterlab
+    # via openai
 idna==3.4
+    # via anyio
+    # via httpx
+    # via jsonschema
     # via requests
     # via yarl
+imbalanced-learn==0.12.3
+    # via pycaret
+importlib-metadata==7.2.1
+    # via dash
+    # via pycaret
 intel-openmp==2021.4.0
     # via mkl
 ipykernel==6.29.4
+    # via jupyterlab
     # via spyder-kernels
 ipython==8.25.0
     # via ipykernel
+    # via ipywidgets
+    # via pycaret
     # via pyvis
     # via spyder-kernels
+ipywidgets==8.1.3
+    # via pycaret
+isoduration==20.11.0
+    # via jsonschema
 itsdangerous==2.2.0
     # via flask
 jedi==0.19.1
     # via ipython
+    # via python-lsp-server
 jinja2==3.1.3
     # via flask
+    # via jupyter-server
+    # via jupyterlab
+    # via jupyterlab-server
+    # via nbconvert
+    # via pycaret
     # via pyvis
     # via torch
     # via torch-geometric
-joblib==1.4.2
+joblib==1.3.2
+    # via imbalanced-learn
+    # via pmdarima
+    # via pycaret
+    # via pyod
     # via scikit-learn
+    # via scikit-plot
+json5==0.9.25
+    # via jupyterlab-server
 jsonpickle==3.2.2
     # via pyvis
+jsonpointer==3.0.0
+    # via jsonschema
+jsonschema==4.22.0
+    # via jupyter-events
+    # via jupyterlab-server
+    # via nbformat
+jsonschema-specifications==2023.12.1
+    # via jsonschema
 jupyter-client==8.6.2
     # via ipykernel
+    # via jupyter-server
+    # via nbclient
     # via spyder-kernels
 jupyter-core==5.7.2
     # via ipykernel
     # via jupyter-client
+    # via jupyter-server
+    # via jupyterlab
+    # via nbclient
+    # via nbconvert
+    # via nbformat
+jupyter-events==0.10.0
+    # via jupyter-server
+jupyter-lsp==2.2.5
+    # via jupyterlab
+    # via jupyterlab-lsp
+jupyter-server==2.14.1
+    # via jupyter-lsp
+    # via jupyterlab
+    # via jupyterlab-code-formatter
+    # via jupyterlab-server
+    # via notebook
+    # via notebook-shim
+jupyter-server-terminals==0.5.3
+    # via jupyter-server
+jupyterlab==4.1.6
+    # via jupyterlab-lsp
+    # via notebook
+jupyterlab-code-formatter==2.2.1
+jupyterlab-lsp==5.1.0
+jupyterlab-pygments==0.3.0
+    # via nbconvert
+jupyterlab-server==2.24.0
+    # via jupyterlab
+    # via notebook
+jupyterlab-widgets==3.0.11
+    # via ipywidgets
+kaleido==0.2.1
+    # via pycaret
 kiwisolver==1.4.5
     # via matplotlib
 lightgbm==4.4.0
     # via furlong
+    # via pycaret
 llvmlite==0.43.0
     # via numba
+lsprotocol==2023.0.1
+    # via python-lsp-ruff
 mako==1.3.5
     # via alembic
 markupsafe==2.1.5
     # via jinja2
     # via mako
+    # via nbconvert
+    # via pycaret
     # via werkzeug
-matplotlib==3.9.0
+matplotlib==3.7.5
+    # via catboost
     # via furlong
     # via matplotlib-fontja
+    # via pycaret
+    # via pyod
+    # via scikit-plot
     # via seaborn
+    # via yellowbrick
 matplotlib-fontja==1.0.0
     # via furlong
 matplotlib-inline==0.1.7
     # via ipykernel
     # via ipython
+mistune==3.0.2
+    # via nbconvert
 mkl==2021.4.0
     # via torch
 mpmath==1.3.0
@@ -123,48 +278,99 @@ mpmath==1.3.0
 multidict==6.0.5
     # via aiohttp
     # via yarl
+nbclient==0.10.0
+    # via nbconvert
+nbconvert==7.16.4
+    # via jupyter-server
+nbformat==5.10.4
+    # via jupyter-server
+    # via nbclient
+    # via nbconvert
+    # via pycaret
 nest-asyncio==1.6.0
+    # via dash
     # via ipykernel
 networkx==3.2.1
     # via pyvis
     # via torch
+notebook==7.1.3
+notebook-shim==0.2.4
+    # via jupyterlab
+    # via notebook
 numba==0.60.0
+    # via pycaret
+    # via pyod
     # via shap
 numpy==1.26.3
+    # via catboost
+    # via category-encoders
     # via contourpy
+    # via imbalanced-learn
     # via lightgbm
     # via matplotlib
     # via numba
     # via optuna
     # via pandas
     # via patsy
+    # via plotly-resampler
+    # via pmdarima
     # via pyarrow
+    # via pycaret
+    # via pyod
     # via scikit-learn
     # via scipy
     # via seaborn
     # via shap
+    # via sktime
     # via statsmodels
+    # via tbats
     # via torch-geometric
     # via torchvision
+    # via tsdownsample
+    # via xgboost
+    # via yellowbrick
+openai==1.35.3
+    # via furlong
 openpyxl==3.1.4
     # via furlong
-optuna==3.5.0
+optuna==3.6.1
     # via furlong
+orjson==3.10.5
+    # via plotly-resampler
+overrides==7.7.0
+    # via jupyter-server
 packaging==22.0
+    # via deprecation
     # via ipykernel
+    # via jupyter-server
+    # via jupyterlab
+    # via jupyterlab-code-formatter
+    # via jupyterlab-server
     # via matplotlib
+    # via nbconvert
     # via optuna
     # via plotly
+    # via pmdarima
     # via shap
+    # via sktime
     # via statsmodels
-pandas==2.2.2
+pandas==2.1.4
+    # via catboost
+    # via category-encoders
     # via furlong
+    # via plotly-resampler
+    # via pmdarima
+    # via pycaret
     # via seaborn
     # via shap
+    # via sktime
     # via statsmodels
+pandocfilters==1.5.1
+    # via nbconvert
 parso==0.8.4
     # via jedi
 patsy==0.5.6
+    # via category-encoders
     # via statsmodels
 pillow==10.2.0
     # via matplotlib
@@ -172,70 +378,176 @@ pillow==10.2.0
 pip==24.1
 platformdirs==4.2.2
     # via jupyter-core
-plotly==5.22.0
+playwright==1.44.0
     # via furlong
+plotly==5.22.0
+    # via catboost
+    # via dash
+    # via furlong
+    # via plotly-resampler
+    # via pycaret
+plotly-resampler==0.10.0
+    # via pycaret
+pluggy==1.5.0
+    # via python-lsp-server
+pmdarima==2.0.4
+    # via pycaret
+    # via tbats
 polars==0.20.31
     # via furlong
+prometheus-client==0.20.0
+    # via jupyter-server
 prompt-toolkit==3.0.47
     # via ipython
 psutil==6.0.0
     # via ipykernel
+    # via pycaret
     # via torch-geometric
 pure-eval==0.2.2
     # via stack-data
 pyarrow==16.1.0
     # via furlong
+pycaret==3.3.2
+    # via furlong
+pycparser==2.22
+    # via cffi
+pydantic==2.7.4
+    # via openai
+pydantic-core==2.18.4
+    # via pydantic
+pyee==11.1.0
+    # via playwright
 pyg-lib==0.4.0+pt23cu121
     # via furlong
 pygments==2.18.0
     # via ipython
+    # via nbconvert
+pyod==2.0.1
+    # via pycaret
 pyparsing==3.1.2
     # via matplotlib
     # via torch-geometric
 python-dateutil==2.9.0.post0
+    # via arrow
     # via jupyter-client
     # via matplotlib
     # via pandas
 python-dotenv==1.0.1
     # via furlong
+python-json-logger==2.0.7
+    # via jupyter-events
+python-lsp-jsonrpc==1.1.2
+    # via python-lsp-server
+python-lsp-ruff==2.2.1
+python-lsp-server==1.11.0
+    # via python-lsp-ruff
 pytz==2024.1
     # via pandas
 pyvis==0.3.2
     # via furlong
 pywin32==306
     # via jupyter-core
+pywinpty==2.0.13
+    # via jupyter-server
+    # via jupyter-server-terminals
+    # via terminado
 pyyaml==6.0.1
+    # via jupyter-events
     # via optuna
 pyzmq==26.0.3
     # via ipykernel
     # via jupyter-client
+    # via jupyter-server
     # via spyder-kernels
+referencing==0.35.1
+    # via jsonschema
+    # via jsonschema-specifications
+    # via jupyter-events
 requests==2.28.1
+    # via dash
+    # via furlong
+    # via jupyterlab-server
+    # via pycaret
     # via torch-geometric
+retrying==1.3.4
+    # via dash
+rfc3339-validator==0.1.4
+    # via jsonschema
+    # via jupyter-events
+rfc3986-validator==0.1.1
+    # via jsonschema
+    # via jupyter-events
+rpds-py==0.18.1
+    # via jsonschema
+    # via referencing
 ruff==0.4.10
-scikit-learn==1.5.0
+    # via python-lsp-ruff
+schemdraw==0.15
+    # via pycaret
+scikit-base==0.7.8
+    # via sktime
+scikit-learn==1.4.2
+    # via category-encoders
     # via furlong
+    # via imbalanced-learn
+    # via pmdarima
+    # via pycaret
+    # via pyod
+    # via scikit-plot
     # via shap
+    # via sktime
+    # via tbats
     # via torch-geometric
-scipy==1.13.1
+    # via yellowbrick
+scikit-plot==0.3.7
+    # via pycaret
+scipy==1.11.4
+    # via catboost
+    # via category-encoders
     # via furlong
+    # via imbalanced-learn
     # via lightgbm
+    # via pmdarima
+    # via pycaret
+    # via pyod
     # via scikit-learn
+    # via scikit-plot
     # via shap
+    # via sktime
     # via statsmodels
+    # via tbats
     # via torch-cluster
     # via torch-geometric
     # via torch-sparse
+    # via xgboost
+    # via yellowbrick
 seaborn==0.13.2
     # via furlong
+send2trash==1.8.3
+    # via jupyter-server
+setuptools==70.1.0
+    # via dash
+    # via pmdarima
 shap==0.45.1
     # via furlong
 six==1.16.0
     # via asttokens
+    # via bleach
+    # via catboost
     # via patsy
     # via python-dateutil
+    # via retrying
+    # via rfc3339-validator
+sktime==0.26.0
+    # via pycaret
 slicer==0.0.8
     # via shap
+sniffio==1.3.1
+    # via anyio
+    # via httpx
+    # via openai
+soupsieve==2.5
+    # via beautifulsoup4
 spyder-kernels==2.5.2
 sqlalchemy==2.0.31
     # via alembic
@@ -243,15 +555,26 @@ sqlalchemy==2.0.31
 stack-data==0.6.3
     # via ipython
 statsmodels==0.14.2
+    # via category-encoders
     # via furlong
+    # via pmdarima
+    # via pycaret
 sympy==1.12
     # via torch
+tbats==1.1.3
+    # via pycaret
 tbb==2021.11.0
     # via mkl
-tenacity==8.4.1
+tenacity==8.4.2
     # via plotly
+terminado==0.18.1
+    # via jupyter-server
+    # via jupyter-server-terminals
 threadpoolctl==3.5.0
+    # via imbalanced-learn
     # via scikit-learn
+tinycss2==1.3.0
+    # via nbconvert
 torch==2.3.1+cu121
     # via furlong
     # via torchaudio
@@ -273,28 +596,74 @@ torchvision==0.18.1+cu121
 tornado==6.4.1
     # via ipykernel
     # via jupyter-client
+    # via jupyter-server
+    # via jupyterlab
+    # via notebook
+    # via terminado
 tqdm==4.64.1
+    # via openai
     # via optuna
+    # via pycaret
     # via shap
     # via torch-geometric
 traitlets==5.14.3
     # via comm
     # via ipykernel
     # via ipython
+    # via ipywidgets
     # via jupyter-client
     # via jupyter-core
+    # via jupyter-events
+    # via jupyter-server
+    # via jupyterlab
     # via matplotlib-inline
+    # via nbclient
+    # via nbconvert
+    # via nbformat
+tsdownsample==0.1.3
+    # via plotly-resampler
+types-python-dateutil==2.9.0.20240316
+    # via arrow
 typing-extensions==4.9.0
     # via alembic
+    # via dash
+    # via openai
+    # via pydantic
+    # via pydantic-core
+    # via pyee
     # via sqlalchemy
     # via torch
 tzdata==2024.1
     # via pandas
+ujson==5.10.0
+    # via python-lsp-jsonrpc
+    # via python-lsp-server
+uri-template==1.3.0
+    # via jsonschema
 urllib3==1.26.13
+    # via pmdarima
     # via requests
 wcwidth==0.2.13
     # via prompt-toolkit
+webcolors==24.6.0
+    # via jsonschema
+webencodings==0.5.1
+    # via bleach
+    # via tinycss2
+websocket-client==1.8.0
+    # via jupyter-server
 werkzeug==3.0.3
+    # via dash
     # via flask
+widgetsnbextension==4.0.11
+    # via ipywidgets
+xgboost==2.1.0
+    # via furlong
+xxhash==3.4.1
+    # via pycaret
 yarl==1.9.4
     # via aiohttp
+yellowbrick==1.5
+    # via pycaret
+zipp==3.19.2
+    # via importlib-metadata

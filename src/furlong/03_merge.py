@@ -44,6 +44,7 @@ df_hjc = read_df_file(file_directory, "HJC")
 df_kab = read_df_file(file_directory, "KAB")
 df_kyi = read_df_file(file_directory, "KYI")
 df_sed = read_df_file(file_directory, "SED")
+df_ks = read_df_file(file_directory, "KS")
 
 df_race = pd.merge(
     df_bac,
@@ -94,16 +95,31 @@ df_output = pd.merge(
     how="inner",
 )
 
-df_input = merge_previous_race_data(df_horse, df_output, 5)
+df_output2 = pd.merge(
+    df_output,
+    df_ks,
+    left_on=[
+        "騎手コード",
+        "年月日",
+    ],
+    right_on=[
+        "騎手コード",
+        "データ年月日",
+    ],
+    how="left",
+)
+df_output2 = df_output2.drop(columns=["データ年月日"], axis=1)
+
+df_input = merge_previous_race_data(df_horse, df_output2, 5)
 
 # カラム名に接頭辞を追加
 prefix = "IN_"
 df_input.columns = [prefix + col for col in df_input.columns]
 prefix = "OUT_"
-df_output.columns = [prefix + col for col in df_output.columns]
+df_output2.columns = [prefix + col for col in df_output2.columns]
 
 # アウトプット (目的変数) から必要な情報を抽出
-df_output_subset = df_output[
+df_output_subset = df_output2[
     [
         "OUT_レースキー_場コード",
         "OUT_レースキー_年",
@@ -112,7 +128,6 @@ df_output_subset = df_output[
         "OUT_レースキー_R",
         "OUT_馬番",
         "OUT_馬成績_着順",
-        "OUT_馬成績_確定単勝オッズ",
     ]
 ]
 

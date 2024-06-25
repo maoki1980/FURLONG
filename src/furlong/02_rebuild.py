@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
+from sklearn.preprocessing import PowerTransformer
 from utility import summarize_object_columns
 
 
@@ -37,6 +38,63 @@ def format_weight_change(weight_str):
     weight_str = weight_str.replace(" ", "")
     weight_str = weight_str.replace("+", "")
     return weight_str
+
+
+# 成績の文字列をパースして着順の割合を出す関数
+def parse_and_calculate_rates(s, n):
+    # 桁数
+    col = n * 4
+    # 欠損値の場合は [np.nan, np.nan, np.nan] を返す
+    if pd.isna(s):
+        return [np.nan, np.nan, np.nan]
+    # スペースを0に置換
+    s = s.replace(" ", "0")
+    # 固定長にする
+    s = s.zfill(col)
+    # n桁ずつ切り取ってリストに保存
+    parts = [s[i : i + n] for i in range(0, col, n)]
+    # 各部分を整数に変換
+    parsed_parts = [int(part) for part in parts]
+
+    # 1着、2着、3着、それ以外の回数
+    first_place = parsed_parts[0]
+    second_place = parsed_parts[1]
+    third_place = parsed_parts[2]
+    other_place = parsed_parts[3]
+    total_races = first_place + second_place + third_place + other_place
+
+    if total_races == 0:
+        return [0.0, 0.0, 0.0]
+
+    # 1着率
+    first_rate = first_place / total_races
+    # 2着以内の率
+    top_two_rate = (first_place + second_place) / total_races
+    # 3着以内の率
+    top_three_rate = (first_place + second_place + third_place) / total_races
+
+    return [first_rate, top_two_rate, top_three_rate]
+
+
+# Box-Cox変換を行う関数
+def boxcox_transform_column(df, column_name):
+    # 列の最小値を確認しシフト
+    min_value = df[column_name].min()
+    if min_value <= 0:
+        shift = abs(min_value) + 1
+        df[column_name + "_shifted"] = df[column_name] + shift
+    else:
+        shift = 0
+        df[column_name + "_shifted"] = df[column_name]
+
+    # PowerTransformerのインスタンスを作成
+    pt = PowerTransformer(method="box-cox")
+
+    # 変換の適用 (2D配列を期待するためreshapeが必要)
+    df[column_name + "_boxcox"] = pt.fit_transform(df[[column_name + "_shifted"]])
+
+    # シフト量を返す
+    return pt, shift
 
 
 # dfのデータ型のダウンキャストを無効化
@@ -359,11 +417,13 @@ df_kyi["騎手指数"] = pd.to_numeric(df_kyi["騎手指数"], errors="coerce")
 df_kyi["騎手指数"] = (
     df_kyi["騎手指数"].fillna(df_kyi["騎手指数"].median()).astype(float)
 )
+df_kyi["騎手指数_log1p"] = df_kyi["騎手指数"].apply(lambda x: np.log1p(x))
 
 df_kyi["情報指数"] = pd.to_numeric(df_kyi["情報指数"], errors="coerce")
 df_kyi["情報指数"] = (
     df_kyi["情報指数"].fillna(df_kyi["情報指数"].median()).astype(float)
 )
+df_kyi["情報指数_log1p"] = df_kyi["情報指数"].apply(lambda x: np.log1p(x))
 
 df_kyi["総合指数"] = pd.to_numeric(df_kyi["総合指数"], errors="coerce")
 df_kyi["総合指数"] = (
@@ -383,6 +443,7 @@ df_kyi["基準オッズ"] = pd.to_numeric(df_kyi["基準オッズ"], errors="coe
 df_kyi["基準オッズ"] = (
     df_kyi["基準オッズ"].fillna(df_kyi["基準オッズ"].mean()).astype(float)
 )
+df_kyi["基準オッズ_log1p"] = df_kyi["基準オッズ"].apply(lambda x: np.log1p(x))
 
 df_kyi["基準人気順位"] = pd.to_numeric(df_kyi["基準人気順位"], errors="coerce")
 df_kyi["基準人気順位"] = (
@@ -393,6 +454,7 @@ df_kyi["基準複勝オッズ"] = pd.to_numeric(df_kyi["基準複勝オッズ"],
 df_kyi["基準複勝オッズ"] = (
     df_kyi["基準複勝オッズ"].fillna(df_kyi["基準複勝オッズ"].mean()).astype(float)
 )
+df_kyi["基準複勝オッズ_log1p"] = df_kyi["基準複勝オッズ"].apply(lambda x: np.log1p(x))
 
 df_kyi["基準複勝人気順位"] = pd.to_numeric(df_kyi["基準複勝人気順位"], errors="coerce")
 df_kyi["基準複勝人気順位"] = (
@@ -402,41 +464,69 @@ df_kyi["基準複勝人気順位"] = (
 df_kyi["特定情報◎"] = (
     pd.to_numeric(df_kyi["特定情報◎"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["特定情報◎_log1p"] = df_kyi["特定情報◎"].apply(lambda x: np.log1p(x))
+
 df_kyi["特定情報○"] = (
     pd.to_numeric(df_kyi["特定情報○"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["特定情報○_log1p"] = df_kyi["特定情報○"].apply(lambda x: np.log1p(x))
+
 df_kyi["特定情報▲"] = (
     pd.to_numeric(df_kyi["特定情報▲"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["特定情報▲_log1p"] = df_kyi["特定情報▲"].apply(lambda x: np.log1p(x))
+
 df_kyi["特定情報△"] = (
     pd.to_numeric(df_kyi["特定情報△"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["特定情報△_log1p"] = df_kyi["特定情報△"].apply(lambda x: np.log1p(x))
+
 df_kyi["特定情報×"] = (
     pd.to_numeric(df_kyi["特定情報×"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["特定情報×_log1p"] = df_kyi["特定情報×"].apply(lambda x: np.log1p(x))
+
 df_kyi["総合情報◎"] = (
     pd.to_numeric(df_kyi["総合情報◎"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["総合情報◎_log1p"] = df_kyi["総合情報◎"].apply(lambda x: np.log1p(x))
+boxcox_transform_column(df_kyi, "総合情報◎_log1p")
+
 df_kyi["総合情報○"] = (
     pd.to_numeric(df_kyi["総合情報○"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["総合情報○_log1p"] = df_kyi["総合情報○"].apply(lambda x: np.log1p(x))
+boxcox_transform_column(df_kyi, "総合情報○_log1p")
+
 df_kyi["総合情報▲"] = (
     pd.to_numeric(df_kyi["総合情報▲"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["総合情報▲_log1p"] = df_kyi["総合情報▲"].apply(lambda x: np.log1p(x))
+boxcox_transform_column(df_kyi, "総合情報▲_log1p")
+
 df_kyi["総合情報△"] = (
     pd.to_numeric(df_kyi["総合情報△"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["総合情報△_log1p"] = df_kyi["総合情報△"].apply(lambda x: np.log1p(x))
+boxcox_transform_column(df_kyi, "総合情報△_log1p")
+
 df_kyi["総合情報×"] = (
     pd.to_numeric(df_kyi["総合情報×"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["総合情報×_log1p"] = df_kyi["総合情報×"].apply(lambda x: np.log1p(x))
+boxcox_transform_column(df_kyi, "総合情報×_log1p")
 
 df_kyi["人気指数"] = pd.to_numeric(df_kyi["人気指数"], errors="coerce")
 df_kyi["人気指数"] = df_kyi["人気指数"].fillna(df_kyi["人気指数"].median()).astype(int)
+df_kyi["人気指数_log1p"] = df_kyi["人気指数"].apply(lambda x: np.log1p(x))
+df_kyi["人気指数_log1p_log1p"] = df_kyi["人気指数_log1p"].apply(lambda x: np.log1p(x))
+
 
 df_kyi["調教指数"] = pd.to_numeric(df_kyi["調教指数"], errors="coerce")
 df_kyi["調教指数"] = (
     df_kyi["調教指数"].fillna(df_kyi["調教指数"].median()).astype(float)
 )
+boxcox_transform_column(df_kyi, "調教指数")
 
 df_kyi["厩舎指数"] = pd.to_numeric(df_kyi["厩舎指数"], errors="coerce")
 df_kyi["厩舎指数"] = (
@@ -450,6 +540,8 @@ df_kyi["騎手期待連対率"] = pd.to_numeric(df_kyi["騎手期待連対率"],
 df_kyi["騎手期待連対率"] = (
     df_kyi["騎手期待連対率"].fillna(df_kyi["騎手期待連対率"].median()).astype(float)
 )
+df_kyi["騎手期待連対率_log1p"] = df_kyi["騎手期待連対率"].apply(lambda x: np.log1p(x))
+boxcox_transform_column(df_kyi, "騎手期待連対率_log1p")
 
 df_kyi["激走指数"] = pd.to_numeric(df_kyi["激走指数"], errors="coerce")
 df_kyi["激走指数"] = df_kyi["激走指数"].fillna(df_kyi["激走指数"].median()).astype(int)
@@ -491,14 +583,23 @@ df_kyi["印コード_調教印"] = df_kyi["印コード_調教印"].fillna("0").
 df_kyi["印コード_激走印"] = df_kyi["印コード_激走印"].fillna("0").astype("category")
 df_kyi["芝適性コード"] = df_kyi["芝適性コード"].fillna("0").astype("category")
 df_kyi["ダ適性コード"] = df_kyi["ダ適性コード"].fillna("0").astype("category")
-df_kyi["騎手コード"] = df_kyi["騎手コード"].fillna("").astype("category")
-df_kyi["調教師コード"] = df_kyi["調教師コード"].fillna("").astype("category")
+df_kyi["騎手コード"] = df_kyi["騎手コード"].astype(int)
+df_kyi["調教師コード"] = df_kyi["調教師コード"].fillna(0).astype(int)
+
 df_kyi["賞金情報_獲得賞金"] = (
     pd.to_numeric(df_kyi["賞金情報_獲得賞金"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["賞金情報_獲得賞金_log1p"] = df_kyi["賞金情報_獲得賞金"].apply(
+    lambda x: np.log1p(x)
+)
+
 df_kyi["賞金情報_収得賞金"] = (
     pd.to_numeric(df_kyi["賞金情報_収得賞金"], errors="coerce").fillna(0).astype(int)
 )
+df_kyi["賞金情報_収得賞金_log1p"] = df_kyi["賞金情報_収得賞金"].apply(
+    lambda x: np.log1p(x)
+)
+
 df_kyi["賞金情報_条件クラス"] = (
     df_kyi["賞金情報_条件クラス"].fillna("0").astype("category")
 )
@@ -540,11 +641,13 @@ df_kyi["騎手期待単勝率"] = pd.to_numeric(df_kyi["騎手期待単勝率"],
 df_kyi["騎手期待単勝率"] = (
     df_kyi["騎手期待単勝率"].fillna(df_kyi["騎手期待単勝率"].median()).astype(float)
 )
+boxcox_transform_column(df_kyi, "騎手期待単勝率")
 
 df_kyi["騎手期待3着内率"] = pd.to_numeric(df_kyi["騎手期待3着内率"], errors="coerce")
 df_kyi["騎手期待3着内率"] = (
     df_kyi["騎手期待3着内率"].fillna(df_kyi["騎手期待3着内率"].median()).astype(float)
 )
+boxcox_transform_column(df_kyi, "騎手期待3着内率")
 
 df_kyi["輸送区分"] = df_kyi["輸送区分"].fillna("0").astype("category")
 
@@ -559,6 +662,7 @@ df_kyi["入厩何走目"] = pd.to_numeric(df_kyi["入厩何走目"], errors="coe
 df_kyi["入厩何走目"] = (
     df_kyi["入厩何走目"].fillna(df_kyi["入厩何走目"].median()).astype(int)
 )
+df_kyi["入厩何走目_log1p"] = df_kyi["入厩何走目"].apply(lambda x: np.log1p(x))
 
 df_kyi["放牧先ランク"] = df_kyi["放牧先ランク"].fillna("").astype("category")
 df_kyi["厩舎ランク"] = df_kyi["厩舎ランク"].fillna("").astype("category")
@@ -574,33 +678,33 @@ df_kyi = df_kyi[
         "血統登録番号",
         "馬名",
         "IDM",
-        "騎手指数",
-        "情報指数",
+        "騎手指数_log1p",
+        "情報指数_log1p",
         "総合指数",
         "脚質",
         "距離適性",
         "上昇度",
         "ローテーション",
-        "基準オッズ",
+        "基準オッズ_log1p",
         "基準人気順位",
-        "基準複勝オッズ",
+        "基準複勝オッズ_log1p",
         "基準複勝人気順位",
-        "特定情報◎",
-        "特定情報○",
-        "特定情報▲",
-        "特定情報△",
-        "特定情報×",
-        "総合情報◎",
-        "総合情報○",
-        "総合情報▲",
-        "総合情報△",
-        "総合情報×",
-        "人気指数",
-        "調教指数",
+        "特定情報◎_log1p",
+        "特定情報○_log1p",
+        "特定情報▲_log1p",
+        "特定情報△_log1p",
+        "特定情報×_log1p",
+        "総合情報◎_log1p_boxcox",
+        "総合情報○_log1p_boxcox",
+        "総合情報▲_log1p_boxcox",
+        "総合情報△_log1p_boxcox",
+        "総合情報×_log1p_boxcox",
+        "人気指数_log1p_log1p",
+        "調教指数_boxcox",
         "厩舎指数",
         "調教矢印コード",
         "厩舎評価コード",
-        "騎手期待連対率",
+        "騎手期待連対率_log1p_boxcox",
         "激走指数",
         "蹄コード",
         "重適正コード",
@@ -627,8 +731,8 @@ df_kyi = df_kyi[
         "ダ適性コード",
         "騎手コード",
         "調教師コード",
-        "賞金情報_獲得賞金",
-        "賞金情報_収得賞金",
+        "賞金情報_獲得賞金_log1p",
+        "賞金情報_収得賞金_log1p",
         "賞金情報_条件クラス",
         "距離適性2",
         "取消フラグ",
@@ -641,14 +745,14 @@ df_kyi = df_kyi[
         "ペース指数順位",
         "上がり指数順位",
         "位置指数順位",
-        "騎手期待単勝率",
-        "騎手期待3着内率",
+        "騎手期待単勝率_boxcox",
+        "騎手期待3着内率_boxcox",
         "輸送区分",
         "万券指数",
         "万券印",
         "降級フラグ",
         "激走タイプ",
-        "入厩何走目",
+        "入厩何走目_log1p",
         "放牧先ランク",
         "厩舎ランク",
     ]
@@ -686,6 +790,9 @@ df_sed["馬成績_確定単勝オッズ"] = (
     df_sed["馬成績_確定単勝オッズ"]
     .fillna(df_sed["馬成績_確定単勝オッズ"].mean())
     .astype(float)
+)
+df_sed["馬成績_確定単勝オッズ_log1p"] = df_sed["馬成績_確定単勝オッズ"].apply(
+    lambda x: np.log1p(x)
 )
 
 df_sed["馬成績_確定単勝人気順位"] = pd.to_numeric(
@@ -744,6 +851,7 @@ df_sed["JRDBデータ_テン指数"] = (
     .fillna(df_sed["JRDBデータ_テン指数"].median())
     .astype(float)
 )
+boxcox_transform_column(df_sed, "JRDBデータ_テン指数")
 
 df_sed["JRDBデータ_上がり指数"] = pd.to_numeric(
     df_sed["JRDBデータ_上がり指数"], errors="coerce"
@@ -753,6 +861,7 @@ df_sed["JRDBデータ_上がり指数"] = (
     .fillna(df_sed["JRDBデータ_上がり指数"].median())
     .astype(float)
 )
+boxcox_transform_column(df_sed, "JRDBデータ_上がり指数")
 
 df_sed["JRDBデータ_ペース指数"] = pd.to_numeric(
     df_sed["JRDBデータ_ペース指数"], errors="coerce"
@@ -762,6 +871,7 @@ df_sed["JRDBデータ_ペース指数"] = (
     .fillna(df_sed["JRDBデータ_ペース指数"].median())
     .astype(float)
 )
+boxcox_transform_column(df_sed, "JRDBデータ_ペース指数")
 
 df_sed["JRDBデータ_レースP指数"] = pd.to_numeric(
     df_sed["JRDBデータ_レースP指数"], errors="coerce"
@@ -771,6 +881,7 @@ df_sed["JRDBデータ_レースP指数"] = (
     .fillna(df_sed["JRDBデータ_レースP指数"].median())
     .astype(float)
 )
+boxcox_transform_column(df_sed, "JRDBデータ_レースP指数")
 
 df_sed["JRDBデータ_1(2)着タイム差"] = pd.to_numeric(
     df_sed["JRDBデータ_1(2)着タイム差"], errors="coerce"
@@ -803,16 +914,21 @@ df_sed["確定複勝オッズ下"] = pd.to_numeric(df_sed["確定複勝オッズ
 df_sed["確定複勝オッズ下"] = (
     df_sed["確定複勝オッズ下"].fillna(df_sed["確定複勝オッズ下"].mean()).astype(float)
 )
+df_sed["確定複勝オッズ下_log1p"] = df_sed["確定複勝オッズ下"].apply(
+    lambda x: np.log1p(x)
+)
 
 df_sed["10時単勝オッズ"] = pd.to_numeric(df_sed["10時単勝オッズ"], errors="coerce")
 df_sed["10時単勝オッズ"] = (
     df_sed["10時単勝オッズ"].fillna(df_sed["10時単勝オッズ"].mean()).astype(float)
 )
+df_sed["10時単勝オッズ_log1p"] = df_sed["10時単勝オッズ"].apply(lambda x: np.log1p(x))
 
 df_sed["10時複勝オッズ"] = pd.to_numeric(df_sed["10時複勝オッズ"], errors="coerce")
 df_sed["10時複勝オッズ"] = (
     df_sed["10時複勝オッズ"].fillna(df_sed["10時複勝オッズ"].mean()).astype(float)
 )
+df_sed["10時複勝オッズ_log1p"] = df_sed["10時複勝オッズ"].apply(lambda x: np.log1p(x))
 
 df_sed["コーナー順位1"] = pd.to_numeric(df_sed["コーナー順位1"], errors="coerce")
 df_sed["コーナー順位1"] = (
@@ -844,8 +960,8 @@ df_sed["後3F先頭差"] = (
     df_sed["後3F先頭差"].fillna(df_sed["後3F先頭差"].mean()).astype(int)
 )
 
-df_sed["騎手コード"] = df_sed["騎手コード"].fillna("").astype("category")
-df_sed["調教師コード"] = df_sed["調教師コード"].fillna("").astype("category")
+df_sed["騎手コード"] = df_sed["騎手コード"].astype(int)
+df_sed["調教師コード"] = df_sed["調教師コード"].astype(int)
 
 df_sed["馬体重"] = pd.to_numeric(df_sed["馬体重"], errors="coerce")
 df_sed["馬体重"] = df_sed["馬体重"].fillna(df_sed["馬体重"].mean()).astype(float)
@@ -884,7 +1000,7 @@ df_sed = df_sed[
         "馬成績_異常区分",
         "馬成績_タイム",
         "馬成績_斤量",
-        "馬成績_確定単勝オッズ",
+        "馬成績_確定単勝オッズ_log1p",
         "馬成績_確定単勝人気順位",
         "JRDBデータ_IDM",
         "JRDBデータ_素点",
@@ -896,16 +1012,16 @@ df_sed = df_sed[
         "JRDBデータ_気配コード",
         "JRDBデータ_レースペース",
         "JRDBデータ_馬ペース",
-        "JRDBデータ_テン指数",
-        "JRDBデータ_上がり指数",
-        "JRDBデータ_ペース指数",
-        "JRDBデータ_レースP指数",
+        "JRDBデータ_テン指数_boxcox",
+        "JRDBデータ_上がり指数_boxcox",
+        "JRDBデータ_ペース指数_boxcox",
+        "JRDBデータ_レースP指数_boxcox",
         "JRDBデータ_1(2)着タイム差",
         "JRDBデータ_前3Fタイム",
         "JRDBデータ_後3Fタイム",
-        "確定複勝オッズ下",
-        "10時単勝オッズ",
-        "10時複勝オッズ",
+        "確定複勝オッズ下_log1p",
+        "10時単勝オッズ_log1p",
+        "10時複勝オッズ_log1p",
         "コーナー順位1",
         "コーナー順位2",
         "コーナー順位3",
@@ -931,10 +1047,110 @@ save_df_file(str(file_directory), df_sed, "SED")
 summary_sed = summarize_object_columns(df_sed)
 
 
+df_kza = read_df_file(file_directory, "KZA")
+df_ksa = read_df_file(file_directory, "KSA")
+df_ks = pd.concat([df_ksa, df_kza])
+df_ks = df_ks.drop_duplicates().reset_index(drop=True)
+
+df_ks["騎手コード"] = df_ks["騎手コード"].astype(int)
+df_ks["所属コード"] = df_ks["所属コード"].astype("category")
+df_ks["初免許年"] = df_ks["初免許年"].astype(int)
+df_ks["見習い区分"] = df_ks["見習い区分"].astype("category")
+
+df_ks["本年平地成績_1着率"] = df_ks["本年平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[0]
+)
+df_ks["本年平地成績_2着以内率"] = df_ks["本年平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[1]
+)
+df_ks["本年平地成績_3着以内率"] = df_ks["本年平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[2]
+)
+
+df_ks["本年障害成績_1着率"] = df_ks["本年障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[0]
+)
+df_ks["本年障害成績_2着以内率"] = df_ks["本年障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[1]
+)
+df_ks["本年障害成績_3着以内率"] = df_ks["本年障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[2]
+)
+
+df_ks["昨年平地成績_1着率"] = df_ks["昨年平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[0]
+)
+df_ks["昨年平地成績_2着以内率"] = df_ks["昨年平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[1]
+)
+df_ks["昨年平地成績_3着以内率"] = df_ks["昨年平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[2]
+)
+
+df_ks["昨年障害成績_1着率"] = df_ks["昨年障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[0]
+)
+df_ks["昨年障害成績_2着以内率"] = df_ks["昨年障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[1]
+)
+df_ks["昨年障害成績_3着以内率"] = df_ks["昨年障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 3)[2]
+)
+
+df_ks["通算平地成績_1着率"] = df_ks["通算平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 5)[0]
+)
+df_ks["通算平地成績_2着以内率"] = df_ks["通算平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 5)[1]
+)
+df_ks["通算平地成績_3着以内率"] = df_ks["通算平地成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 5)[2]
+)
+
+df_ks["通算障害成績_1着率"] = df_ks["通算障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 5)[0]
+)
+df_ks["通算障害成績_2着以内率"] = df_ks["通算障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 5)[1]
+)
+df_ks["通算障害成績_3着以内率"] = df_ks["通算障害成績"].apply(
+    lambda x: parse_and_calculate_rates(x, 5)[2]
+)
+
+df_ks = df_ks[
+    [
+        "騎手コード",
+        "所属コード",
+        "初免許年",
+        "見習い区分",
+        "本年平地成績_1着率",
+        "本年平地成績_2着以内率",
+        "本年平地成績_3着以内率",
+        "本年障害成績_1着率",
+        "本年障害成績_2着以内率",
+        "本年障害成績_3着以内率",
+        "昨年平地成績_1着率",
+        "昨年平地成績_2着以内率",
+        "昨年平地成績_3着以内率",
+        "昨年障害成績_1着率",
+        "昨年障害成績_2着以内率",
+        "昨年障害成績_3着以内率",
+        "通算平地成績_1着率",
+        "通算平地成績_2着以内率",
+        "通算平地成績_3着以内率",
+        "通算障害成績_1着率",
+        "通算障害成績_2着以内率",
+        "通算障害成績_3着以内率",
+        "データ年月日",
+    ]
+]
+
+save_df_file(str(file_directory), df_ks, "KS")
+summary_ks = summarize_object_columns(df_ks)
+
+
 # df_cza = read_df_file(file_directory, "CZA")
 # df_csa = read_df_file(file_directory, "CSA")
-# df_kza = read_df_file(file_directory, "KZA")
-# df_ksa = read_df_file(file_directory, "KSA")
 # df_cha = read_df_file(file_directory, "CHA")
 # df_cyb = read_df_file(file_directory, "CYB")
 # df_joa = read_df_file(file_directory, "JOA")

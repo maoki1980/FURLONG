@@ -164,5 +164,3 @@ cython_debug/
 # VSCode
 .vscode/
 
-# column_info.json
-column_info*.json

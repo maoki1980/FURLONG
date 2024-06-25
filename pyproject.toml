@@ -7,15 +7,15 @@ authors = [
 ]
 dependencies = [
     "flask>=3.0.3",
-    "matplotlib>=3.9.0",
-    "pandas>=2.2.2",
+    "matplotlib<3.8",
+    "seaborn>=0.13.2",
+    "pandas<2.2",
     "polars>=0.20.31",
     "plotly>=5.22.0",
     "pyg-lib==0.4.0+pt23cu121",
     "python-dotenv>=1.0.1",
-    "scikit-learn>=1.5.0",
-    "scipy>=1.13.1",
-    "seaborn>=0.13.2",
+    "scikit-learn<1.5",
+    "scipy==1.11.4",
     "statsmodels>=0.14.2",
     "torch==2.3.1+cu121",
     "torch-cluster==1.6.3+pt23cu121",
@@ -30,9 +30,15 @@ dependencies = [
     "pyarrow>=16.1.0",
     "openpyxl>=3.1.4",
     "matplotlib-fontja>=1.0.0",
-    "optuna==3.5",
+    "optuna>=3.6.1",
     "shap>=0.45.1",
-    "rankmetrics>=1.0.0",
+    "pycaret>=3.3.2",
+    "openai>=1.35.3",
+    "catboost>=1.2.5",
+    "xgboost>=2.1.0",
+    "requests>=2.28.1",
+    "beautifulsoup4>=4.12.3",
+    "playwright>=1.44.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -46,6 +52,12 @@ managed = true
 dev-dependencies = [
     "pip>=24.1",
     "ruff>=0.4.10",
+    "jupyterlab<4.2",
+    "notebook<7.2",
+    "jupyterlab-lsp>=5.1.0",
+    "python-lsp-server>=1.11.0",
+    "python-lsp-ruff>=2.2.1",
+    "jupyterlab-code-formatter>=2.2.1",
     "spyder-kernels==2.5.*",
 ]
 

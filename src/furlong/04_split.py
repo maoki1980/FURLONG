@@ -60,8 +60,9 @@ df = pd.read_feather(read_file_path)
 
 # データの日付による絞り込み
 df["IN_年月日"] = pd.to_numeric(df["IN_年月日"], errors="coerce")
-df["IN_年月日"] = df["IN_年月日"].fillna(0).astype(int)
+df["IN_年月日"] = df["IN_年月日"].astype(int)
 df = df[df["IN_年月日"] >= since_date].reset_index(drop=True)
+df["IN_年月日"] = df["IN_年月日"].astype(str)
 
 # 保存先JSONファイルパス
 save_json_path = os.path.join(str(json_save_path), "column_info.json")
@@ -94,6 +95,7 @@ feature_columns = [
     if details["usage"] in ("feature", "key")
 ]
 # 予測データを分離
+df["IN_年月日"] = df["IN_年月日"].astype(int)
 df_test = df[df["_merge"] != "both"].reset_index(drop=True)
 df_train = df[df["_merge"] == "both"].reset_index(drop=True)
 # 予測したい日付を抽出
