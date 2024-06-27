@@ -57,7 +57,7 @@ def geometric_mean(y_true, y_pred):
 
 
 # オーバーサンプリングする関数
-def perform_oversampling(X, y, majority_fractor=1):
+def perform_oversampling(X, y, majority_fractor=0.3):
     logger.debug(f"Original training dataset's label count: {Counter(y)}")
     logger.debug("Resampling start.")
     class_counts = y.value_counts()
@@ -227,10 +227,10 @@ def plot_learning_curve(learning_curve_data, metric, fold, output_dir):
     # プロット
     plt.figure()
     plt.plot(x_axis, learning_curve_data["valid_0"][metric], label="Validation")
-    plt.legend()
     plt.xlabel("Iteration")
     plt.ylabel(f"{metric}")
     plt.title(f"Learning Curve for {metric} (Fold {fold + 1})")
+    plt.legend()
     plt.savefig(
         os.path.join(
             output_dir, f"learning_curve_{START_DATETIME}_fold_{fold + 1}.png"
@@ -264,6 +264,7 @@ def plot_roc_curve(fpr, tpr, roc_auc, fold, output_dir):
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title(f"Receiver-Operating-Characteristic Curve (Fold {fold + 1})")
+    plt.legend()
     plt.savefig(
         os.path.join(output_dir, f"roc_curve_{START_DATETIME}_fold_{fold + 1}.png"),
         dpi=300,
@@ -296,6 +297,7 @@ def plot_pr_curve(precision, recall, pr_auc, fold, output_dir):
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.title(f"Precision-Recall Curve (Fold {fold + 1})")
+    plt.legend()
     plt.savefig(
         os.path.join(output_dir, f"pr_curve_{START_DATETIME}_fold_{fold + 1}.png"),
         dpi=300,
@@ -327,10 +329,10 @@ BASE_PARAMS = {
     "lambda_l1": 0.1,  # default: 0.0
     "lambda_l2": 0.1,  # default: 0.0
 }
-NUM_BOOST_ROUND = 100000  # 最大イテレーション数
-RESAMPLING = 0  # リサンプリングするか
+NUM_BOOST_ROUND = 10000  # 最大イテレーション数
+RESAMPLING = 1  # リサンプリングするか
 CV = 1  # 交差検証するか
-OPTIMIZE = 0  # 最適化するか
+OPTIMIZE = 1  # 最適化するか
 
 # 環境変数の読み込み
 project_path = "../../"
@@ -588,4 +590,4 @@ if CV:
     best_threshold = summary.loc["optimal_threshold", "mean"]
 else:
     best_threshold = 0.5
-y_test_pred = [1 if x > best_threshold else 0 for x in y_test_proba]
+y_test_pred = (y_test_proba > best_threshold).astype(int)

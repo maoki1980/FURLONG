@@ -64,7 +64,11 @@ df_summary = summarize_object_columns(df)
 save_json_path = os.path.join(str(json_save_path), "column_info.json")
 
 # カラムを説明変数と目的変数に振り分けるためのJSONファイルを作成する
-target_columns = ["OUT_馬成績_着順", "OUT_馬成績_確定単勝オッズ"]
+target_columns = [
+    "OUT_馬成績_着順",
+    "OUT_馬成績_確定単勝オッズ",
+    "OUT_確定複勝オッズ下",
+]
 key_columns = [
     "IN_レースキー",
     "IN_レースキー_場コード",
@@ -93,10 +97,10 @@ feature_columns = [
 ]
 # 予測データを分離
 df["IN_年月日"] = df["IN_年月日"].astype(int)
-df_test = df[df["_merge"] == 1].reset_index(drop=True)
-df_train = df[df["_merge"] == 0].reset_index(drop=True)
-# 予測したい日付を抽出
-df_test = df_test[df_test["IN_年月日"] == pred_date]
+df_train = df[(df["_merge"] == 0) & (df["IN_年月日"] < pred_date)].reset_index(
+    drop=True
+)
+df_test = df[df["IN_年月日"] == pred_date]
 # 目的変数データと説明変数データを抽出
 df_target = df_train[target_columns]
 df_features = df_train[feature_columns]
@@ -115,9 +119,9 @@ df_target["単勝穴馬"] = (
     (df_target["OUT_馬成績_着順"] == 1) & (df_target["OUT_馬成績_確定単勝オッズ"] >= 5)
 ).astype(int)
 
-# 3着以内かつ単勝オッズ30倍以上 (複勝オッズ5倍以上相当) の馬を1とする
+# 3着以内かつ複勝オッズ5倍以上の馬を1とする
 df_target["複勝穴馬"] = (
-    (df_target["OUT_馬成績_着順"] <= 3) & (df_target["OUT_馬成績_確定単勝オッズ"] >= 30)
+    (df_target["OUT_馬成績_着順"] <= 3) & (df_target["OUT_確定複勝オッズ下"] >= 5)
 ).astype(int)
 
 # 着順カテゴリを作成する

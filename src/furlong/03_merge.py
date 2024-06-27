@@ -155,6 +155,7 @@ df_output_subset = df_output2[
         "OUT_馬番",
         "OUT_馬成績_着順",
         "OUT_馬成績_確定単勝オッズ",
+        "OUT_確定複勝オッズ下",
     ]
 ]
 
@@ -242,6 +243,7 @@ fill_type_dic = {
     "JRDBデータ_1(2)着タイム差": "mean",
     "JRDBデータ_前3Fタイム": "mean",
     "JRDBデータ_後3Fタイム": "mean",
+    "確定複勝オッズ下": "median",
     "確定複勝オッズ下_log1p": "median",
     "10時単勝オッズ_log1p": "median",
     "10時複勝オッズ_log1p": "median",
