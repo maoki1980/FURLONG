@@ -2,6 +2,7 @@ import os
 
 import lightgbm as lgb
 import matplotlib.pyplot as plt
+import matplotlib_fontja
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -13,6 +14,8 @@ from sklearn.metrics import (
     f1_score,
     fbeta_score,
     log_loss,
+    matthews_corrcoef,
+    precision_recall_curve,
     precision_score,
     recall_score,
     roc_curve,
@@ -131,10 +134,14 @@ def train_and_evaluate_model(
         f1s,
         f2s,
         log_losses,
-        best_thresholds,
+        optimal_thresholds,
         best_iterations,
         roc_aucs,
+        pr_aucs,
+        mccs,
     ) = (
+        [],
+        [],
         [],
         [],
         [],
@@ -175,23 +182,44 @@ def train_and_evaluate_model(
 
         best_iterations.append(model.best_iteration)
 
-        y_pred = model.predict(X_valid, num_iteration=model.best_iteration)
-        fpr, tpr, thresholds = roc_curve(y_valid, y_pred)
+        # 確率値を取得
+        y_prob = model.predict(X_valid, num_iteration=model.best_iteration)
+        # ROC曲線をプロット
+        fpr, tpr, thresholds = roc_curve(y_valid, y_prob)
+        # PR曲線をプロット
+        precision, recall, thresholds = precision_recall_curve(y_valid, y_prob)
+
+        # コストベネフィット分析による最適閾値の決定
+
+        # 偽陽性と偽陰性のコスト比率を定義
+        c_fp = 100  # 偽陽性のコスト (賭け金額)
+        c_fn = 1000  # 偽陰性のコスト (失われた利益)
+        # 期待されるコストを計算
+        expected_costs = []
+        for threshold in thresholds:
+            y_pred = (y_prob >= threshold).astype(int)
+            fp = np.sum((y_pred == 1) & (y_valid == 0))
+            fn = np.sum((y_pred == 0) & (y_valid == 1))
+            cost = c_fp * fp + c_fn * fn
+            expected_costs.append(cost)
+        # 期待されるコストが最小となる閾値を選択
+        optimal_threshold = thresholds[np.argmin(expected_costs)]
+        optimal_thresholds.append(optimal_threshold)
+
+        # クラス分類
+        y_pred = [1 if x >= optimal_threshold else 0 for x in y_prob]
+
+        accuracies.append(accuracy_score(y_valid, y_pred))
+        precisions.append(precision_score(y_valid, y_pred, average="binary"))
+        recalls.append(recall_score(y_valid, y_pred, average="binary"))
+        f1s.append(f1_score(y_valid, y_pred, average="binary"))
+        f2s.append(fbeta_score(y_valid, y_pred, beta=2, average="binary"))
+        log_losses.append(log_loss(y_valid, y_prob))
         roc_auc = auc(fpr, tpr)
         roc_aucs.append(roc_auc)
-
-        j_scores = tpr - fpr
-        best_threshold = thresholds[np.argmax(j_scores)]
-        best_thresholds.append(best_threshold)
-
-        y_pred_classes = [1 if x >= best_threshold else 0 for x in y_pred]
-
-        accuracies.append(accuracy_score(y_valid, y_pred_classes))
-        precisions.append(precision_score(y_valid, y_pred_classes, average="binary"))
-        recalls.append(recall_score(y_valid, y_pred_classes, average="binary"))
-        f1s.append(f1_score(y_valid, y_pred_classes, average="binary"))
-        f2s.append(fbeta_score(y_valid, y_pred_classes, beta=2, average="binary"))
-        log_losses.append(log_loss(y_valid, y_pred))
+        pr_auc = auc(recall, precision)
+        pr_aucs.append(pr_auc)
+        mccs.append(matthews_corrcoef(y_valid, y_pred))
 
         # 最終foldのデータを記録
         if fold == skf.get_n_splits() - 1:
@@ -214,9 +242,11 @@ def train_and_evaluate_model(
         f1s,
         f2s,
         log_losses,
-        best_thresholds,
+        optimal_thresholds,
         best_iterations,
         roc_aucs,
+        pr_aucs,
+        mccs,
     )
 
 
@@ -226,9 +256,11 @@ def calculate_metrics(
     recalls,
     f1s,
     f2s,
+    mccs,
     log_losses,
     roc_aucs,
-    best_thresholds,
+    pr_aucs,
+    optimal_thresholds,
     best_iterations,
 ):
     metrics = {
@@ -237,9 +269,11 @@ def calculate_metrics(
         "recall": (np.mean(recalls), np.std(recalls)),
         "f1": (np.mean(f1s), np.std(f1s)),
         "f2": (np.mean(f2s), np.std(f2s)),
+        "mcc": (np.mean(mccs), np.std(mccs)),
         "log_loss": (np.mean(log_losses), np.std(log_losses)),
         "roc_auc": (np.mean(roc_aucs), np.std(roc_aucs)),
-        "best_threshold": (np.mean(best_thresholds), np.std(best_thresholds)),
+        "pr_auc": (np.mean(pr_aucs), np.std(pr_aucs)),
+        "optimal_threshold": (np.mean(optimal_thresholds), np.std(optimal_thresholds)),
         "best_iteration": (np.mean(best_iterations), np.std(best_iterations)),
     }
     return metrics
@@ -459,9 +493,8 @@ def transform_columns(df):
         df["IN_レースキー_回"] + df["IN_レースキー_場コード"] + df["IN_レースキー_日"]
     )
 
-    df["発走日時"] = pd.to_datetime(
-        df["IN_年月日"] + df["IN_発走時間"], format="%Y%m%d%H%M"
-    )
+    df["発走日時"] = df["IN_年月日"] + df["IN_発走時間"]
+    df["発走日時"] = pd.to_datetime(df["発走日時"], format="%Y%m%d%H%M")
 
     df["IN_馬番"] = df["IN_馬番"].astype(int)
     df["IN_枠番"] = df["IN_枠番"].astype(int)
@@ -520,6 +553,7 @@ env_file = os.getenv("ENV_FILE", os.path.join(project_path, ".env"))
 load_dotenv(env_file)
 file_directory = os.getenv("DF_DIR")
 pred_directory = os.path.join(str(os.getenv("PRED_DIR")), "BINARY")
+matplotlib_fontja.japanize()
 
 # 結果出力ディレクトリ作成
 os.makedirs(pred_directory, exist_ok=True)
@@ -528,7 +562,7 @@ os.makedirs(pred_directory, exist_ok=True)
 df_all, df_target, df_features, df_test_features = read_data(file_directory)
 
 # 目的変数を選択
-target_col = "複勝"
+target_col = "穴馬"
 key_columns = [
     "IN_レースキー",
     "IN_レースキー_場コード",
@@ -551,6 +585,9 @@ params = {
     "seed": RANDOM_SEED,
     "bagging_seed": RANDOM_SEED,
     "feature_fraction_seed": RANDOM_SEED,
+    "is_unbalance": "true",
+    "min_data_in_leaf": 30,  # default: 20, increase if necessary
+    "min_sum_hessian_in_leaf": 1e-2,  # default: 1e-3, increase if necessary
 }
 num_iterations = 10000
 early_stopping_round = 100
@@ -566,9 +603,11 @@ skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=RANDOM_SEED)
     f1s,
     f2s,
     log_losses,
-    best_thresholds,
+    optimal_thresholds,
     best_iterations,
     roc_aucs,
+    pr_aucs,
+    mccs,
 ) = train_and_evaluate_model(
     X, y, params, num_iterations, early_stopping_round, skf, pred_directory
 )
@@ -580,9 +619,11 @@ metrics = calculate_metrics(
     recalls,
     f1s,
     f2s,
+    mccs,
     log_losses,
     roc_aucs,
-    best_thresholds,
+    pr_aucs,
+    optimal_thresholds,
     best_iterations,
 )
 display_metrics(metrics)
@@ -600,7 +641,7 @@ shap_values = calculate_shap_values(final_model, X, pred_directory)
 
 # テストデータの予測
 y_test_pred_classes, y_test_pred = prepare_test_data(
-    df_test_features, key_columns, final_model, metrics["best_threshold"][0]
+    df_test_features, key_columns, final_model, metrics["optimal_threshold"][0]
 )
 
 # 結果のマージ

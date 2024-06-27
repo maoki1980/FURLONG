@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
+from utility import summarize_object_columns
 
 
 def store_column_roles_json(df, json_filepath, target_columns, key_columns):
@@ -54,15 +55,10 @@ since_date = int(os.getenv("DF_SINCE"))
 pred_date = int(os.getenv("PRED_DATE"))
 json_save_path = "../../"
 
-# 全データの読込み
+# データの読込み
 read_file_path = os.path.join(str(file_directory), "ALL_DATA.feather")
 df = pd.read_feather(read_file_path)
-
-# データの日付による絞り込み
-df["IN_年月日"] = pd.to_numeric(df["IN_年月日"], errors="coerce")
-df["IN_年月日"] = df["IN_年月日"].astype(int)
-df = df[df["IN_年月日"] >= since_date].reset_index(drop=True)
-df["IN_年月日"] = df["IN_年月日"].astype(str)
+df_summary = summarize_object_columns(df)
 
 # 保存先JSONファイルパス
 save_json_path = os.path.join(str(json_save_path), "column_info.json")
@@ -85,6 +81,7 @@ read_json_path = os.path.join(str(json_save_path), "column_info_fixed.json")
 # JSONファイルを読み込む
 with open(read_json_path, "r", encoding="utf-8") as file:
     columns_info = json.load(file)
+print("Loaded columns list from json:", os.path.basename(read_json_path))
 # JSONの情報を元にカラムを振り分ける
 target_columns = [
     col for col, details in columns_info.items() if details["usage"] == "target"
@@ -96,8 +93,8 @@ feature_columns = [
 ]
 # 予測データを分離
 df["IN_年月日"] = df["IN_年月日"].astype(int)
-df_test = df[df["_merge"] != "both"].reset_index(drop=True)
-df_train = df[df["_merge"] == "both"].reset_index(drop=True)
+df_test = df[df["_merge"] == 1].reset_index(drop=True)
+df_train = df[df["_merge"] == 0].reset_index(drop=True)
 # 予測したい日付を抽出
 df_test = df_test[df_test["IN_年月日"] == pred_date]
 # 目的変数データと説明変数データを抽出
@@ -112,6 +109,16 @@ df_target["単勝"] = np.where(df_target["OUT_馬成績_着順"] == 1, 1, 0)
 # 3着以内に入る馬を1とする
 df_target = df_target.copy()
 df_target["複勝"] = np.where(df_target["OUT_馬成績_着順"] <= 3, 1, 0)
+
+# 1着かつ単勝オッズ5倍以上の馬を1とする
+df_target["単勝穴馬"] = (
+    (df_target["OUT_馬成績_着順"] == 1) & (df_target["OUT_馬成績_確定単勝オッズ"] >= 5)
+).astype(int)
+
+# 3着以内かつ単勝オッズ30倍以上 (複勝オッズ5倍以上相当) の馬を1とする
+df_target["複勝穴馬"] = (
+    (df_target["OUT_馬成績_着順"] <= 3) & (df_target["OUT_馬成績_確定単勝オッズ"] >= 30)
+).astype(int)
 
 # 着順カテゴリを作成する
 conditions = [

@@ -71,6 +71,7 @@ colorama==0.4.6
     # via click
     # via colorlog
     # via ipython
+    # via loguru
     # via tqdm
 colorlog==6.8.2
     # via optuna
@@ -144,6 +145,7 @@ idna==3.4
     # via requests
     # via yarl
 imbalanced-learn==0.12.3
+    # via furlong
     # via pycaret
 importlib-metadata==7.2.1
     # via dash
@@ -245,6 +247,8 @@ lightgbm==4.4.0
     # via pycaret
 llvmlite==0.43.0
     # via numba
+loguru==0.7.2
+    # via furlong
 lsprotocol==2023.0.1
     # via python-lsp-ruff
 mako==1.3.5
@@ -657,6 +661,8 @@ werkzeug==3.0.3
     # via flask
 widgetsnbextension==4.0.11
     # via ipywidgets
+win32-setctime==1.1.0
+    # via loguru
 xgboost==2.1.0
     # via furlong
 xxhash==3.4.1

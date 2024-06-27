@@ -39,6 +39,8 @@ dependencies = [
     "requests>=2.28.1",
     "beautifulsoup4>=4.12.3",
     "playwright>=1.44.0",
+    "imbalanced-learn>=0.12.3",
+    "loguru>=0.7.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

@@ -77,6 +77,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+.virtual_documents/
 
 # IPython
 profile_default/
@@ -164,3 +165,5 @@ cython_debug/
 # VSCode
 .vscode/
 
+# column_info.json
+column_info*.json

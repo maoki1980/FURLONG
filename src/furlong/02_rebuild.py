@@ -97,8 +97,13 @@ def boxcox_transform_column(df, column_name):
     return pt, shift
 
 
-# dfのデータ型のダウンキャストを無効化
-pd.set_option("future.no_silent_downcasting", True)
+# Box-Cox変換を行う関数
+def log1p_transform_column(series):
+    min_value = series.min()
+    shifted_series = series - min_value + 1
+    log1p_transformed = np.log1p(shifted_series)
+    return log1p_transformed
+
 
 # 環境変数の読み込み
 project_path = "../../"
@@ -315,32 +320,28 @@ df_kab["芝馬場状態中"] = df_kab["芝馬場状態中"].fillna("0").astype("
 df_kab["芝馬場状態外"] = df_kab["芝馬場状態外"].fillna("0").astype("category")
 
 df_kab["芝馬場差"] = pd.to_numeric(df_kab["芝馬場差"], errors="coerce")
-df_kab["芝馬場差"] = df_kab["芝馬場差"].fillna(df_kab["芝馬場差"].mean()).astype(int)
+average_value = df_kab["芝馬場差"].mean()
+df_kab["芝馬場差"] = df_kab["芝馬場差"].fillna(average_value).astype(int)
 
 df_kab["直線馬場差最内"] = pd.to_numeric(df_kab["直線馬場差最内"], errors="coerce")
-df_kab["直線馬場差最内"] = (
-    df_kab["直線馬場差最内"].fillna(df_kab["直線馬場差最内"].mean()).astype(int)
-)
+average_value = df_kab["直線馬場差最内"].mean()
+df_kab["直線馬場差最内"] = df_kab["直線馬場差最内"].fillna(average_value).astype(int)
 
 df_kab["直線馬場差内"] = pd.to_numeric(df_kab["直線馬場差内"], errors="coerce")
-df_kab["直線馬場差内"] = (
-    df_kab["直線馬場差内"].fillna(df_kab["直線馬場差内"].mean()).astype(int)
-)
+average_value = df_kab["直線馬場差内"].mean()
+df_kab["直線馬場差内"] = df_kab["直線馬場差内"].fillna(average_value).astype(int)
 
 df_kab["直線馬場差中"] = pd.to_numeric(df_kab["直線馬場差中"], errors="coerce")
-df_kab["直線馬場差中"] = (
-    df_kab["直線馬場差中"].fillna(df_kab["直線馬場差中"].mean()).astype(int)
-)
+average_value = df_kab["直線馬場差中"].mean()
+df_kab["直線馬場差中"] = df_kab["直線馬場差中"].fillna(average_value).astype(int)
 
 df_kab["直線馬場差外"] = pd.to_numeric(df_kab["直線馬場差外"], errors="coerce")
-df_kab["直線馬場差外"] = (
-    df_kab["直線馬場差外"].fillna(df_kab["直線馬場差外"].mean()).astype(int)
-)
+average_value = df_kab["直線馬場差外"].mean()
+df_kab["直線馬場差外"] = df_kab["直線馬場差外"].fillna(average_value).astype(int)
 
 df_kab["直線馬場差大外"] = pd.to_numeric(df_kab["直線馬場差大外"], errors="coerce")
-df_kab["直線馬場差大外"] = (
-    df_kab["直線馬場差大外"].fillna(df_kab["直線馬場差大外"].mean()).astype(int)
-)
+average_value = df_kab["直線馬場差大外"].mean()
+df_kab["直線馬場差大外"] = df_kab["直線馬場差大外"].fillna(average_value).astype(int)
 
 df_kab["ダ馬場状態コード"] = df_kab["ダ馬場状態コード"].fillna("0").astype("category")
 df_kab["ダ馬場状態内"] = df_kab["ダ馬場状態内"].fillna("0").astype("category")
@@ -348,25 +349,25 @@ df_kab["ダ馬場状態中"] = df_kab["ダ馬場状態中"].fillna("0").astype("
 df_kab["ダ馬場状態外"] = df_kab["ダ馬場状態外"].fillna("0").astype("category")
 
 df_kab["ダ馬場差"] = pd.to_numeric(df_kab["ダ馬場差"], errors="coerce")
-df_kab["ダ馬場差"] = df_kab["ダ馬場差"].fillna(df_kab["ダ馬場差"].mean()).astype(int)
+average_value = df_kab["ダ馬場差"].mean()
+df_kab["ダ馬場差"] = df_kab["ダ馬場差"].fillna(average_value).astype(int)
 
 df_kab["連続何日目"] = pd.to_numeric(df_kab["連続何日目"], errors="coerce")
-df_kab["連続何日目"] = (
-    df_kab["連続何日目"].fillna(df_kab["連続何日目"].median()).astype(int)
-)
+average_value = df_kab["連続何日目"].median()
+df_kab["連続何日目"] = df_kab["連続何日目"].fillna(average_value).astype(int)
 
 df_kab["芝種類"] = df_kab["芝種類"].fillna("0").astype("category")
 
 df_kab["草丈"] = pd.to_numeric(df_kab["草丈"], errors="coerce")
-df_kab["草丈"] = df_kab["草丈"].fillna(df_kab["草丈"].mean()).astype(float)
+average_value = df_kab["草丈"].mean()
+df_kab["草丈"] = df_kab["草丈"].fillna(average_value).astype(float)
 
 df_kab["転圧"] = df_kab["転圧"].fillna("0").astype("category")
 df_kab["凍結防止剤"] = df_kab["凍結防止剤"].fillna("0").astype("category")
 
 df_kab["中間降水量"] = pd.to_numeric(df_kab["中間降水量"], errors="coerce")
-df_kab["中間降水量"] = (
-    df_kab["中間降水量"].fillna(df_kab["中間降水量"].mean()).astype(float)
-)
+average_value = df_kab["中間降水量"].mean()
+df_kab["中間降水量"] = df_kab["中間降水量"].fillna(average_value).astype(float)
 
 df_kab = df_kab[
     [
@@ -411,140 +412,135 @@ df_kyi["馬番"] = df_kyi["馬番"].fillna(0).astype(int)
 df_kyi["血統登録番号"] = df_kyi["血統登録番号"].fillna(0).astype(int)
 
 df_kyi["IDM"] = pd.to_numeric(df_kyi["IDM"], errors="coerce")
-df_kyi["IDM"] = df_kyi["IDM"].fillna(df_kyi["IDM"].median()).astype(float)
+average_value = df_kyi["IDM"].median()
+df_kyi["IDM"] = df_kyi["IDM"].fillna(average_value).astype(float)
+boxcox_transform_column(df_kyi, "IDM")
 
 df_kyi["騎手指数"] = pd.to_numeric(df_kyi["騎手指数"], errors="coerce")
-df_kyi["騎手指数"] = (
-    df_kyi["騎手指数"].fillna(df_kyi["騎手指数"].median()).astype(float)
-)
-df_kyi["騎手指数_log1p"] = df_kyi["騎手指数"].apply(lambda x: np.log1p(x))
+average_value = df_kyi["騎手指数"].median()
+df_kyi["騎手指数"] = df_kyi["騎手指数"].fillna(average_value).astype(float)
+df_kyi["騎手指数_log1p"] = log1p_transform_column(df_kyi["騎手指数"])
 
 df_kyi["情報指数"] = pd.to_numeric(df_kyi["情報指数"], errors="coerce")
-df_kyi["情報指数"] = (
-    df_kyi["情報指数"].fillna(df_kyi["情報指数"].median()).astype(float)
-)
-df_kyi["情報指数_log1p"] = df_kyi["情報指数"].apply(lambda x: np.log1p(x))
+average_value = df_kyi["情報指数"].median()
+df_kyi["情報指数"] = df_kyi["情報指数"].fillna(average_value).astype(float)
+df_kyi["情報指数_log1p"] = log1p_transform_column(df_kyi["情報指数"])
 
 df_kyi["総合指数"] = pd.to_numeric(df_kyi["総合指数"], errors="coerce")
-df_kyi["総合指数"] = (
-    df_kyi["総合指数"].fillna(df_kyi["総合指数"].median()).astype(float)
-)
+average_value = df_kyi["総合指数"].median()
+df_kyi["総合指数"] = df_kyi["総合指数"].fillna(average_value).astype(float)
 
 df_kyi["脚質"] = df_kyi["脚質"].fillna("0").astype("category")
 df_kyi["距離適性"] = df_kyi["距離適性"].fillna("0").astype("category")
 df_kyi["上昇度"] = df_kyi["上昇度"].fillna("0").astype("category")
 
 df_kyi["ローテーション"] = pd.to_numeric(df_kyi["ローテーション"], errors="coerce")
-df_kyi["ローテーション"] = (
-    df_kyi["ローテーション"].fillna(df_kyi["ローテーション"].median()).astype(int)
-)
+average_value = df_kyi["ローテーション"].median()
+df_kyi["ローテーション"] = df_kyi["ローテーション"].fillna(average_value).astype(int)
 
 df_kyi["基準オッズ"] = pd.to_numeric(df_kyi["基準オッズ"], errors="coerce")
-df_kyi["基準オッズ"] = (
-    df_kyi["基準オッズ"].fillna(df_kyi["基準オッズ"].mean()).astype(float)
-)
-df_kyi["基準オッズ_log1p"] = df_kyi["基準オッズ"].apply(lambda x: np.log1p(x))
+average_value = df_kyi["基準オッズ"].mean()
+df_kyi["基準オッズ"] = df_kyi["基準オッズ"].fillna(average_value).astype(float)
+df_kyi["基準オッズ_log1p"] = log1p_transform_column(df_kyi["基準オッズ"])
 
 df_kyi["基準人気順位"] = pd.to_numeric(df_kyi["基準人気順位"], errors="coerce")
-df_kyi["基準人気順位"] = (
-    df_kyi["基準人気順位"].fillna(df_kyi["基準人気順位"].mean()).astype(int)
-)
+average_value = df_kyi["基準人気順位"].mean()
+df_kyi["基準人気順位"] = df_kyi["基準人気順位"].fillna(average_value).astype(int)
 
 df_kyi["基準複勝オッズ"] = pd.to_numeric(df_kyi["基準複勝オッズ"], errors="coerce")
-df_kyi["基準複勝オッズ"] = (
-    df_kyi["基準複勝オッズ"].fillna(df_kyi["基準複勝オッズ"].mean()).astype(float)
-)
-df_kyi["基準複勝オッズ_log1p"] = df_kyi["基準複勝オッズ"].apply(lambda x: np.log1p(x))
+average_value = df_kyi["基準複勝オッズ"].mean()
+df_kyi["基準複勝オッズ"] = df_kyi["基準複勝オッズ"].fillna(average_value).astype(float)
+df_kyi["基準複勝オッズ_log1p"] = log1p_transform_column(df_kyi["基準複勝オッズ"])
 
 df_kyi["基準複勝人気順位"] = pd.to_numeric(df_kyi["基準複勝人気順位"], errors="coerce")
+average_value = df_kyi["基準複勝人気順位"].mean()
 df_kyi["基準複勝人気順位"] = (
-    df_kyi["基準複勝人気順位"].fillna(df_kyi["基準複勝人気順位"].mean()).astype(int)
+    df_kyi["基準複勝人気順位"].fillna(average_value).astype(int)
 )
 
 df_kyi["特定情報◎"] = (
     pd.to_numeric(df_kyi["特定情報◎"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["特定情報◎_log1p"] = df_kyi["特定情報◎"].apply(lambda x: np.log1p(x))
+df_kyi["特定情報◎_log1p"] = log1p_transform_column(df_kyi["特定情報◎"])
 
 df_kyi["特定情報○"] = (
     pd.to_numeric(df_kyi["特定情報○"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["特定情報○_log1p"] = df_kyi["特定情報○"].apply(lambda x: np.log1p(x))
+df_kyi["特定情報○_log1p"] = log1p_transform_column(df_kyi["特定情報○"])
 
 df_kyi["特定情報▲"] = (
     pd.to_numeric(df_kyi["特定情報▲"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["特定情報▲_log1p"] = df_kyi["特定情報▲"].apply(lambda x: np.log1p(x))
+df_kyi["特定情報▲_log1p"] = log1p_transform_column(df_kyi["特定情報▲"])
 
 df_kyi["特定情報△"] = (
     pd.to_numeric(df_kyi["特定情報△"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["特定情報△_log1p"] = df_kyi["特定情報△"].apply(lambda x: np.log1p(x))
+df_kyi["特定情報△_log1p"] = log1p_transform_column(df_kyi["特定情報△"])
 
 df_kyi["特定情報×"] = (
     pd.to_numeric(df_kyi["特定情報×"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["特定情報×_log1p"] = df_kyi["特定情報×"].apply(lambda x: np.log1p(x))
+df_kyi["特定情報×_log1p"] = log1p_transform_column(df_kyi["特定情報×"])
 
 df_kyi["総合情報◎"] = (
     pd.to_numeric(df_kyi["総合情報◎"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["総合情報◎_log1p"] = df_kyi["総合情報◎"].apply(lambda x: np.log1p(x))
+df_kyi["総合情報◎_log1p"] = log1p_transform_column(df_kyi["総合情報◎"])
 boxcox_transform_column(df_kyi, "総合情報◎_log1p")
 
 df_kyi["総合情報○"] = (
     pd.to_numeric(df_kyi["総合情報○"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["総合情報○_log1p"] = df_kyi["総合情報○"].apply(lambda x: np.log1p(x))
+df_kyi["総合情報○_log1p"] = log1p_transform_column(df_kyi["総合情報○"])
 boxcox_transform_column(df_kyi, "総合情報○_log1p")
 
 df_kyi["総合情報▲"] = (
     pd.to_numeric(df_kyi["総合情報▲"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["総合情報▲_log1p"] = df_kyi["総合情報▲"].apply(lambda x: np.log1p(x))
+df_kyi["総合情報▲_log1p"] = log1p_transform_column(df_kyi["総合情報▲"])
 boxcox_transform_column(df_kyi, "総合情報▲_log1p")
 
 df_kyi["総合情報△"] = (
     pd.to_numeric(df_kyi["総合情報△"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["総合情報△_log1p"] = df_kyi["総合情報△"].apply(lambda x: np.log1p(x))
+df_kyi["総合情報△_log1p"] = log1p_transform_column(df_kyi["総合情報△"])
 boxcox_transform_column(df_kyi, "総合情報△_log1p")
 
 df_kyi["総合情報×"] = (
     pd.to_numeric(df_kyi["総合情報×"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["総合情報×_log1p"] = df_kyi["総合情報×"].apply(lambda x: np.log1p(x))
+df_kyi["総合情報×_log1p"] = log1p_transform_column(df_kyi["総合情報×"])
 boxcox_transform_column(df_kyi, "総合情報×_log1p")
 
 df_kyi["人気指数"] = pd.to_numeric(df_kyi["人気指数"], errors="coerce")
-df_kyi["人気指数"] = df_kyi["人気指数"].fillna(df_kyi["人気指数"].median()).astype(int)
-df_kyi["人気指数_log1p"] = df_kyi["人気指数"].apply(lambda x: np.log1p(x))
-df_kyi["人気指数_log1p_log1p"] = df_kyi["人気指数_log1p"].apply(lambda x: np.log1p(x))
+average_value = df_kyi["人気指数"].median()
+df_kyi["人気指数"] = df_kyi["人気指数"].fillna(average_value).astype(int)
+df_kyi["人気指数_log1p"] = log1p_transform_column(df_kyi["人気指数"])
+boxcox_transform_column(df_kyi, "人気指数_log1p")
 
 
 df_kyi["調教指数"] = pd.to_numeric(df_kyi["調教指数"], errors="coerce")
-df_kyi["調教指数"] = (
-    df_kyi["調教指数"].fillna(df_kyi["調教指数"].median()).astype(float)
-)
+average_value = df_kyi["調教指数"].median()
+df_kyi["調教指数"] = df_kyi["調教指数"].fillna(average_value).astype(float)
 boxcox_transform_column(df_kyi, "調教指数")
 
 df_kyi["厩舎指数"] = pd.to_numeric(df_kyi["厩舎指数"], errors="coerce")
-df_kyi["厩舎指数"] = (
-    df_kyi["厩舎指数"].fillna(df_kyi["厩舎指数"].median()).astype(float)
-)
+average_value = df_kyi["厩舎指数"].median()
+df_kyi["厩舎指数"] = df_kyi["厩舎指数"].fillna(average_value).astype(float)
 
 df_kyi["調教矢印コード"] = df_kyi["調教矢印コード"].fillna("0").astype("category")
 df_kyi["厩舎評価コード"] = df_kyi["厩舎評価コード"].fillna("0").astype("category")
 
 df_kyi["騎手期待連対率"] = pd.to_numeric(df_kyi["騎手期待連対率"], errors="coerce")
-df_kyi["騎手期待連対率"] = (
-    df_kyi["騎手期待連対率"].fillna(df_kyi["騎手期待連対率"].median()).astype(float)
-)
-df_kyi["騎手期待連対率_log1p"] = df_kyi["騎手期待連対率"].apply(lambda x: np.log1p(x))
+average_value = df_kyi["騎手期待連対率"].median()
+df_kyi["騎手期待連対率"] = df_kyi["騎手期待連対率"].fillna(average_value).astype(float)
+df_kyi["騎手期待連対率_log1p"] = log1p_transform_column(df_kyi["騎手期待連対率"])
 boxcox_transform_column(df_kyi, "騎手期待連対率_log1p")
 
 df_kyi["激走指数"] = pd.to_numeric(df_kyi["激走指数"], errors="coerce")
-df_kyi["激走指数"] = df_kyi["激走指数"].fillna(df_kyi["激走指数"].median()).astype(int)
+average_value = df_kyi["激走指数"].median()
+df_kyi["激走指数"] = df_kyi["激走指数"].fillna(average_value).astype(int)
 
 df_kyi["蹄コード"] = df_kyi["蹄コード"].fillna("00").astype("category")
 df_kyi["重適正コード"] = df_kyi["重適正コード"].fillna("0").astype("category")
@@ -552,8 +548,9 @@ df_kyi["クラスコード"] = df_kyi["クラスコード"].fillna("00").astype(
 df_kyi["ブリンカー"] = df_kyi["ブリンカー"].fillna("0").astype("category")
 
 df_kyi["負担重量"] = pd.to_numeric(df_kyi["負担重量"], errors="coerce")
+average_value = df_kyi["負担重量"].mean()
 df_kyi["負担重量"] = (
-    df_kyi["負担重量"].fillna(df_kyi["負担重量"].mean()).astype(float) * 0.1
+    df_kyi["負担重量"].fillna(average_value).astype(float) * 0.1
 )  # 0.1kg単位からkg単位に変換
 
 df_kyi["見習い区分"] = df_kyi["見習い区分"].fillna("0").astype("category")
@@ -589,80 +586,69 @@ df_kyi["調教師コード"] = df_kyi["調教師コード"].fillna(0).astype(int
 df_kyi["賞金情報_獲得賞金"] = (
     pd.to_numeric(df_kyi["賞金情報_獲得賞金"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["賞金情報_獲得賞金_log1p"] = df_kyi["賞金情報_獲得賞金"].apply(
-    lambda x: np.log1p(x)
-)
+df_kyi["賞金情報_獲得賞金_log1p"] = log1p_transform_column(df_kyi["賞金情報_獲得賞金"])
 
 df_kyi["賞金情報_収得賞金"] = (
     pd.to_numeric(df_kyi["賞金情報_収得賞金"], errors="coerce").fillna(0).astype(int)
 )
-df_kyi["賞金情報_収得賞金_log1p"] = df_kyi["賞金情報_収得賞金"].apply(
-    lambda x: np.log1p(x)
-)
+df_kyi["賞金情報_収得賞金_log1p"] = log1p_transform_column(df_kyi["賞金情報_収得賞金"])
 
 df_kyi["賞金情報_条件クラス"] = (
     df_kyi["賞金情報_条件クラス"].fillna("0").astype("category")
 )
 df_kyi["距離適性2"] = df_kyi["距離適性2"].fillna("0").astype("category")
 df_kyi["取消フラグ"] = df_kyi["取消フラグ"].fillna("0").astype("category")
-df_kyi["性別コード"] = df_kyi["性別コード"].fillna("0").astype("category")
-df_kyi["馬主会コード"] = df_kyi["馬主会コード"].fillna("").astype("category")
-df_kyi["馬記号コード"] = df_kyi["馬記号コード"].fillna("00").astype("category")
 
 df_kyi["激走順位"] = pd.to_numeric(df_kyi["激走順位"], errors="coerce")
-df_kyi["激走順位"] = df_kyi["激走順位"].fillna(df_kyi["激走順位"].mean()).astype(int)
+average_value = df_kyi["激走順位"].mean()
+df_kyi["激走順位"] = df_kyi["激走順位"].fillna(average_value).astype(int)
 
 df_kyi["LS指数順位"] = pd.to_numeric(df_kyi["LS指数順位"], errors="coerce")
-df_kyi["LS指数順位"] = (
-    df_kyi["LS指数順位"].fillna(df_kyi["LS指数順位"].mean()).astype(int)
-)
+average_value = df_kyi["LS指数順位"].mean()
+df_kyi["LS指数順位"] = df_kyi["LS指数順位"].fillna(average_value).astype(int)
 
 df_kyi["テン指数順位"] = pd.to_numeric(df_kyi["テン指数順位"], errors="coerce")
-df_kyi["テン指数順位"] = (
-    df_kyi["テン指数順位"].fillna(df_kyi["テン指数順位"].mean()).astype(int)
-)
+average_value = df_kyi["テン指数順位"].mean()
+df_kyi["テン指数順位"] = df_kyi["テン指数順位"].fillna(average_value).astype(int)
 
 df_kyi["ペース指数順位"] = pd.to_numeric(df_kyi["ペース指数順位"], errors="coerce")
-df_kyi["ペース指数順位"] = (
-    df_kyi["ペース指数順位"].fillna(df_kyi["ペース指数順位"].mean()).astype(int)
-)
+average_value = df_kyi["ペース指数順位"].mean()
+df_kyi["ペース指数順位"] = df_kyi["ペース指数順位"].fillna(average_value).astype(int)
 
 df_kyi["上がり指数順位"] = pd.to_numeric(df_kyi["上がり指数順位"], errors="coerce")
-df_kyi["上がり指数順位"] = (
-    df_kyi["上がり指数順位"].fillna(df_kyi["上がり指数順位"].mean()).astype(int)
-)
+average_value = df_kyi["上がり指数順位"].mean()
+df_kyi["上がり指数順位"] = df_kyi["上がり指数順位"].fillna(average_value).astype(int)
 
 df_kyi["位置指数順位"] = pd.to_numeric(df_kyi["位置指数順位"], errors="coerce")
-df_kyi["位置指数順位"] = (
-    df_kyi["位置指数順位"].fillna(df_kyi["位置指数順位"].mean()).astype(int)
-)
+average_value = df_kyi["位置指数順位"].mean()
+df_kyi["位置指数順位"] = df_kyi["位置指数順位"].fillna(average_value).astype(int)
 
 df_kyi["騎手期待単勝率"] = pd.to_numeric(df_kyi["騎手期待単勝率"], errors="coerce")
-df_kyi["騎手期待単勝率"] = (
-    df_kyi["騎手期待単勝率"].fillna(df_kyi["騎手期待単勝率"].median()).astype(float)
-)
+average_value = df_kyi["騎手期待単勝率"].median()
+df_kyi["騎手期待単勝率"] = df_kyi["騎手期待単勝率"].fillna(average_value).astype(float)
 boxcox_transform_column(df_kyi, "騎手期待単勝率")
 
 df_kyi["騎手期待3着内率"] = pd.to_numeric(df_kyi["騎手期待3着内率"], errors="coerce")
+average_value = df_kyi["騎手期待3着内率"].median()
 df_kyi["騎手期待3着内率"] = (
-    df_kyi["騎手期待3着内率"].fillna(df_kyi["騎手期待3着内率"].median()).astype(float)
+    df_kyi["騎手期待3着内率"].fillna(average_value).astype(float)
 )
 boxcox_transform_column(df_kyi, "騎手期待3着内率")
 
 df_kyi["輸送区分"] = df_kyi["輸送区分"].fillna("0").astype("category")
 
 df_kyi["万券指数"] = pd.to_numeric(df_kyi["万券指数"], errors="coerce")
-df_kyi["万券指数"] = df_kyi["万券指数"].fillna(df_kyi["万券指数"].median()).astype(int)
+average_value = df_kyi["万券指数"].median()
+df_kyi["万券指数"] = df_kyi["万券指数"].fillna(average_value).astype(int)
 
 df_kyi["万券印"] = df_kyi["万券印"].fillna("0").astype("category")
 df_kyi["降級フラグ"] = df_kyi["降級フラグ"].fillna("").astype("category")
 df_kyi["激走タイプ"] = df_kyi["激走タイプ"].fillna("").astype("category")
 
 df_kyi["入厩何走目"] = pd.to_numeric(df_kyi["入厩何走目"], errors="coerce")
-df_kyi["入厩何走目"] = (
-    df_kyi["入厩何走目"].fillna(df_kyi["入厩何走目"].median()).astype(int)
-)
-df_kyi["入厩何走目_log1p"] = df_kyi["入厩何走目"].apply(lambda x: np.log1p(x))
+average_value = df_kyi["入厩何走目"].median()
+df_kyi["入厩何走目"] = df_kyi["入厩何走目"].fillna(average_value).astype(int)
+df_kyi["入厩何走目_log1p"] = log1p_transform_column(df_kyi["入厩何走目"])
 
 df_kyi["放牧先ランク"] = df_kyi["放牧先ランク"].fillna("").astype("category")
 df_kyi["厩舎ランク"] = df_kyi["厩舎ランク"].fillna("").astype("category")
@@ -677,7 +663,7 @@ df_kyi = df_kyi[
         "馬番",
         "血統登録番号",
         "馬名",
-        "IDM",
+        "IDM_boxcox",
         "騎手指数_log1p",
         "情報指数_log1p",
         "総合指数",
@@ -699,7 +685,7 @@ df_kyi = df_kyi[
         "総合情報▲_log1p_boxcox",
         "総合情報△_log1p_boxcox",
         "総合情報×_log1p_boxcox",
-        "人気指数_log1p_log1p",
+        "人気指数_log1p_boxcox",
         "調教指数_boxcox",
         "厩舎指数",
         "調教矢印コード",
@@ -736,9 +722,6 @@ df_kyi = df_kyi[
         "賞金情報_条件クラス",
         "距離適性2",
         "取消フラグ",
-        "性別コード",
-        "馬主会コード",
-        "馬記号コード",
         "激走順位",
         "LS指数順位",
         "テン指数順位",
@@ -786,39 +769,36 @@ df_sed["馬成績_斤量"] = (
 df_sed["馬成績_確定単勝オッズ"] = pd.to_numeric(
     df_sed["馬成績_確定単勝オッズ"], errors="coerce"
 )
+average_value = df_sed["馬成績_確定単勝オッズ"].mean()
 df_sed["馬成績_確定単勝オッズ"] = (
-    df_sed["馬成績_確定単勝オッズ"]
-    .fillna(df_sed["馬成績_確定単勝オッズ"].mean())
-    .astype(float)
+    df_sed["馬成績_確定単勝オッズ"].fillna(average_value).astype(float)
 )
-df_sed["馬成績_確定単勝オッズ_log1p"] = df_sed["馬成績_確定単勝オッズ"].apply(
-    lambda x: np.log1p(x)
+df_sed["馬成績_確定単勝オッズ_log1p"] = log1p_transform_column(
+    df_sed["馬成績_確定単勝オッズ"]
 )
 
 df_sed["馬成績_確定単勝人気順位"] = pd.to_numeric(
     df_sed["馬成績_確定単勝人気順位"], errors="coerce"
 )
+average_value = df_sed["馬成績_確定単勝人気順位"].mean()
 df_sed["馬成績_確定単勝人気順位"] = (
-    df_sed["馬成績_確定単勝人気順位"]
-    .fillna(df_sed["馬成績_確定単勝人気順位"].mean())
-    .astype(int)
+    df_sed["馬成績_確定単勝人気順位"].fillna(average_value).astype(int)
 )
 
 df_sed["JRDBデータ_IDM"] = pd.to_numeric(df_sed["JRDBデータ_IDM"], errors="coerce")
-df_sed["JRDBデータ_IDM"] = (
-    df_sed["JRDBデータ_IDM"].fillna(df_sed["JRDBデータ_IDM"].median()).astype(float)
-)
+average_value = df_sed["JRDBデータ_IDM"].median()
+df_sed["JRDBデータ_IDM"] = df_sed["JRDBデータ_IDM"].fillna(average_value).astype(float)
 
 df_sed["JRDBデータ_素点"] = pd.to_numeric(df_sed["JRDBデータ_素点"], errors="coerce")
-df_sed["JRDBデータ_素点"] = (
-    df_sed["JRDBデータ_素点"].fillna(df_sed["JRDBデータ_素点"].median()).astype(int)
-)
+average_value = df_sed["JRDBデータ_素点"].median()
+df_sed["JRDBデータ_素点"] = df_sed["JRDBデータ_素点"].fillna(average_value).astype(int)
 
 df_sed["JRDBデータ_馬場差"] = pd.to_numeric(
     df_sed["JRDBデータ_馬場差"], errors="coerce"
 )
+average_value = df_sed["JRDBデータ_馬場差"].mean()
 df_sed["JRDBデータ_馬場差"] = (
-    df_sed["JRDBデータ_馬場差"].fillna(df_sed["JRDBデータ_馬場差"].mean()).astype(int)
+    df_sed["JRDBデータ_馬場差"].fillna(average_value).astype(int)
 )
 
 df_sed["JRDBデータ_コース取り"] = (
@@ -846,132 +826,116 @@ df_sed["JRDBデータ_馬ペース"] = (
 df_sed["JRDBデータ_テン指数"] = pd.to_numeric(
     df_sed["JRDBデータ_テン指数"], errors="coerce"
 )
+average_value = df_sed["JRDBデータ_テン指数"].median()
 df_sed["JRDBデータ_テン指数"] = (
-    df_sed["JRDBデータ_テン指数"]
-    .fillna(df_sed["JRDBデータ_テン指数"].median())
-    .astype(float)
+    df_sed["JRDBデータ_テン指数"].fillna(average_value).astype(float)
 )
 boxcox_transform_column(df_sed, "JRDBデータ_テン指数")
 
 df_sed["JRDBデータ_上がり指数"] = pd.to_numeric(
     df_sed["JRDBデータ_上がり指数"], errors="coerce"
 )
+average_value = df_sed["JRDBデータ_上がり指数"].median()
 df_sed["JRDBデータ_上がり指数"] = (
-    df_sed["JRDBデータ_上がり指数"]
-    .fillna(df_sed["JRDBデータ_上がり指数"].median())
-    .astype(float)
+    df_sed["JRDBデータ_上がり指数"].fillna(average_value).astype(float)
 )
 boxcox_transform_column(df_sed, "JRDBデータ_上がり指数")
 
 df_sed["JRDBデータ_ペース指数"] = pd.to_numeric(
     df_sed["JRDBデータ_ペース指数"], errors="coerce"
 )
+average_value = df_sed["JRDBデータ_ペース指数"].median()
 df_sed["JRDBデータ_ペース指数"] = (
-    df_sed["JRDBデータ_ペース指数"]
-    .fillna(df_sed["JRDBデータ_ペース指数"].median())
-    .astype(float)
+    df_sed["JRDBデータ_ペース指数"].fillna(average_value).astype(float)
 )
 boxcox_transform_column(df_sed, "JRDBデータ_ペース指数")
 
 df_sed["JRDBデータ_レースP指数"] = pd.to_numeric(
     df_sed["JRDBデータ_レースP指数"], errors="coerce"
 )
+average_value = df_sed["JRDBデータ_レースP指数"].median()
 df_sed["JRDBデータ_レースP指数"] = (
-    df_sed["JRDBデータ_レースP指数"]
-    .fillna(df_sed["JRDBデータ_レースP指数"].median())
-    .astype(float)
+    df_sed["JRDBデータ_レースP指数"].fillna(average_value).astype(float)
 )
 boxcox_transform_column(df_sed, "JRDBデータ_レースP指数")
 
 df_sed["JRDBデータ_1(2)着タイム差"] = pd.to_numeric(
     df_sed["JRDBデータ_1(2)着タイム差"], errors="coerce"
 )
+average_value = df_sed["JRDBデータ_1(2)着タイム差"].mean()
 df_sed["JRDBデータ_1(2)着タイム差"] = (
-    df_sed["JRDBデータ_1(2)着タイム差"]
-    .fillna(df_sed["JRDBデータ_1(2)着タイム差"].mean())
-    .astype(float)
+    df_sed["JRDBデータ_1(2)着タイム差"].fillna(average_value).astype(float)
 )
 
 df_sed["JRDBデータ_前3Fタイム"] = pd.to_numeric(
     df_sed["JRDBデータ_前3Fタイム"], errors="coerce"
 )
+average_value = df_sed["JRDBデータ_前3Fタイム"].mean()
 df_sed["JRDBデータ_前3Fタイム"] = (
-    df_sed["JRDBデータ_前3Fタイム"]
-    .fillna(df_sed["JRDBデータ_前3Fタイム"].mean())
-    .astype(float)
+    df_sed["JRDBデータ_前3Fタイム"].fillna(average_value).astype(float)
 )
 
 df_sed["JRDBデータ_後3Fタイム"] = pd.to_numeric(
     df_sed["JRDBデータ_後3Fタイム"], errors="coerce"
 )
+average_value = df_sed["JRDBデータ_後3Fタイム"].mean()
 df_sed["JRDBデータ_後3Fタイム"] = (
-    df_sed["JRDBデータ_後3Fタイム"]
-    .fillna(df_sed["JRDBデータ_後3Fタイム"].mean())
-    .astype(float)
+    df_sed["JRDBデータ_後3Fタイム"].fillna(average_value).astype(float)
 )
 
 df_sed["確定複勝オッズ下"] = pd.to_numeric(df_sed["確定複勝オッズ下"], errors="coerce")
+average_value = df_sed["確定複勝オッズ下"].mean()
 df_sed["確定複勝オッズ下"] = (
-    df_sed["確定複勝オッズ下"].fillna(df_sed["確定複勝オッズ下"].mean()).astype(float)
+    df_sed["確定複勝オッズ下"].fillna(average_value).astype(float)
 )
-df_sed["確定複勝オッズ下_log1p"] = df_sed["確定複勝オッズ下"].apply(
-    lambda x: np.log1p(x)
-)
+df_sed["確定複勝オッズ下_log1p"] = log1p_transform_column(df_sed["確定複勝オッズ下"])
 
 df_sed["10時単勝オッズ"] = pd.to_numeric(df_sed["10時単勝オッズ"], errors="coerce")
-df_sed["10時単勝オッズ"] = (
-    df_sed["10時単勝オッズ"].fillna(df_sed["10時単勝オッズ"].mean()).astype(float)
-)
-df_sed["10時単勝オッズ_log1p"] = df_sed["10時単勝オッズ"].apply(lambda x: np.log1p(x))
+average_value = df_sed["10時単勝オッズ"].mean()
+df_sed["10時単勝オッズ"] = df_sed["10時単勝オッズ"].fillna(average_value).astype(float)
+df_sed["10時単勝オッズ_log1p"] = log1p_transform_column(df_sed["10時単勝オッズ"])
 
 df_sed["10時複勝オッズ"] = pd.to_numeric(df_sed["10時複勝オッズ"], errors="coerce")
-df_sed["10時複勝オッズ"] = (
-    df_sed["10時複勝オッズ"].fillna(df_sed["10時複勝オッズ"].mean()).astype(float)
-)
-df_sed["10時複勝オッズ_log1p"] = df_sed["10時複勝オッズ"].apply(lambda x: np.log1p(x))
+average_value = df_sed["10時複勝オッズ"].mean()
+df_sed["10時複勝オッズ"] = df_sed["10時複勝オッズ"].fillna(average_value).astype(float)
+df_sed["10時複勝オッズ_log1p"] = log1p_transform_column(df_sed["10時複勝オッズ"])
 
 df_sed["コーナー順位1"] = pd.to_numeric(df_sed["コーナー順位1"], errors="coerce")
-df_sed["コーナー順位1"] = (
-    df_sed["コーナー順位1"].fillna(df_sed["コーナー順位1"].mean()).astype(int)
-)
+average_value = df_sed["コーナー順位1"].mean()
+df_sed["コーナー順位1"] = df_sed["コーナー順位1"].fillna(average_value).astype(int)
 
 df_sed["コーナー順位2"] = pd.to_numeric(df_sed["コーナー順位2"], errors="coerce")
-df_sed["コーナー順位2"] = (
-    df_sed["コーナー順位2"].fillna(df_sed["コーナー順位2"].mean()).astype(int)
-)
+average_value = df_sed["コーナー順位2"].mean()
+df_sed["コーナー順位2"] = df_sed["コーナー順位2"].fillna(average_value).astype(int)
 
 df_sed["コーナー順位3"] = pd.to_numeric(df_sed["コーナー順位3"], errors="coerce")
-df_sed["コーナー順位3"] = (
-    df_sed["コーナー順位3"].fillna(df_sed["コーナー順位3"].mean()).astype(int)
-)
+average_value = df_sed["コーナー順位3"].mean()
+df_sed["コーナー順位3"] = df_sed["コーナー順位3"].fillna(average_value).astype(int)
 
 df_sed["コーナー順位4"] = pd.to_numeric(df_sed["コーナー順位4"], errors="coerce")
-df_sed["コーナー順位4"] = (
-    df_sed["コーナー順位4"].fillna(df_sed["コーナー順位4"].mean()).astype(int)
-)
+average_value = df_sed["コーナー順位4"].mean()
+df_sed["コーナー順位4"] = df_sed["コーナー順位4"].fillna(average_value).astype(int)
 
 df_sed["前3F先頭差"] = pd.to_numeric(df_sed["前3F先頭差"], errors="coerce")
-df_sed["前3F先頭差"] = (
-    df_sed["前3F先頭差"].fillna(df_sed["前3F先頭差"].mean()).astype(int)
-)
+average_value = df_sed["前3F先頭差"].mean()
+df_sed["前3F先頭差"] = df_sed["前3F先頭差"].fillna(average_value).astype(int)
 
 df_sed["後3F先頭差"] = pd.to_numeric(df_sed["後3F先頭差"], errors="coerce")
-df_sed["後3F先頭差"] = (
-    df_sed["後3F先頭差"].fillna(df_sed["後3F先頭差"].mean()).astype(int)
-)
+average_value = df_sed["後3F先頭差"].mean()
+df_sed["後3F先頭差"] = df_sed["後3F先頭差"].fillna(average_value).astype(int)
 
 df_sed["騎手コード"] = df_sed["騎手コード"].astype(int)
 df_sed["調教師コード"] = df_sed["調教師コード"].astype(int)
 
 df_sed["馬体重"] = pd.to_numeric(df_sed["馬体重"], errors="coerce")
-df_sed["馬体重"] = df_sed["馬体重"].fillna(df_sed["馬体重"].mean()).astype(float)
+average_value = df_sed["馬体重"].mean()
+df_sed["馬体重"] = df_sed["馬体重"].fillna(average_value).astype(float)
 
 df_sed["馬体重増減"] = pd.to_numeric(
     df_sed["馬体重増減"].apply(format_weight_change), errors="coerce"
 )
-df_sed["馬体重増減"] = (
-    df_sed["馬体重増減"].fillna(df_sed["馬体重増減"].mean()).astype(float)
-)
+average_value = df_sed["馬体重増減"].mean()
+df_sed["馬体重増減"] = df_sed["馬体重増減"].fillna(average_value).astype(float)
 
 df_sed["天候コード"] = df_sed["天候コード"].fillna("0").astype("category")
 df_sed["コース"] = df_sed["コース"].fillna("0").astype("category")
@@ -1000,6 +964,7 @@ df_sed = df_sed[
         "馬成績_異常区分",
         "馬成績_タイム",
         "馬成績_斤量",
+        "馬成績_確定単勝オッズ",
         "馬成績_確定単勝オッズ_log1p",
         "馬成績_確定単勝人気順位",
         "JRDBデータ_IDM",
@@ -1054,48 +1019,87 @@ df_ks = df_ks.drop_duplicates().reset_index(drop=True)
 
 df_ks["騎手コード"] = df_ks["騎手コード"].astype(int)
 df_ks["所属コード"] = df_ks["所属コード"].astype("category")
+
+df_ks["騎手生年"] = df_ks["生年月日"].str[:4]
+df_ks["騎手生年"] = pd.to_numeric(df_ks["騎手生年"], errors="coerce")
+average_value = df_ks["騎手生年"].mean()
+df_ks["騎手生年"] = df_ks["騎手生年"].fillna(average_value).astype(int)
+
 df_ks["初免許年"] = df_ks["初免許年"].astype(int)
 df_ks["見習い区分"] = df_ks["見習い区分"].astype("category")
 
 df_ks["本年平地成績_1着率"] = df_ks["本年平地成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[0]
 )
+average_value = df_ks["本年平地成績_1着率"].mean()
+df_ks["本年平地成績_1着率"] = df_ks["本年平地成績_1着率"].fillna(average_value)
+
 df_ks["本年平地成績_2着以内率"] = df_ks["本年平地成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[1]
 )
+average_value = df_ks["本年平地成績_2着以内率"].mean()
+df_ks["本年平地成績_2着以内率"] = df_ks["本年平地成績_2着以内率"].fillna(average_value)
+
 df_ks["本年平地成績_3着以内率"] = df_ks["本年平地成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[2]
 )
+average_value = df_ks["本年平地成績_3着以内率"].mean()
+df_ks["本年平地成績_3着以内率"] = df_ks["本年平地成績_3着以内率"].fillna(average_value)
+
 
 df_ks["本年障害成績_1着率"] = df_ks["本年障害成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[0]
 )
+average_value = df_ks["本年障害成績_1着率"].mean()
+df_ks["本年障害成績_1着率"] = df_ks["本年障害成績_1着率"].fillna(average_value)
+
 df_ks["本年障害成績_2着以内率"] = df_ks["本年障害成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[1]
 )
+average_value = df_ks["本年障害成績_2着以内率"].mean()
+df_ks["本年障害成績_2着以内率"] = df_ks["本年障害成績_2着以内率"].fillna(average_value)
+
 df_ks["本年障害成績_3着以内率"] = df_ks["本年障害成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[2]
 )
+average_value = df_ks["本年障害成績_3着以内率"].mean()
+df_ks["本年障害成績_3着以内率"] = df_ks["本年障害成績_3着以内率"].fillna(average_value)
 
 df_ks["昨年平地成績_1着率"] = df_ks["昨年平地成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[0]
 )
+average_value = df_ks["昨年平地成績_1着率"].mean()
+df_ks["昨年平地成績_1着率"] = df_ks["昨年平地成績_1着率"].fillna(average_value)
+
 df_ks["昨年平地成績_2着以内率"] = df_ks["昨年平地成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[1]
 )
+average_value = df_ks["昨年平地成績_2着以内率"].mean()
+df_ks["昨年平地成績_2着以内率"] = df_ks["昨年平地成績_2着以内率"].fillna(average_value)
+
 df_ks["昨年平地成績_3着以内率"] = df_ks["昨年平地成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[2]
 )
+average_value = df_ks["昨年平地成績_3着以内率"].mean()
+df_ks["昨年平地成績_3着以内率"] = df_ks["昨年平地成績_3着以内率"].fillna(average_value)
 
 df_ks["昨年障害成績_1着率"] = df_ks["昨年障害成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[0]
 )
+average_value = df_ks["昨年障害成績_1着率"].mean()
+df_ks["昨年障害成績_1着率"] = df_ks["昨年障害成績_1着率"].fillna(average_value)
+
 df_ks["昨年障害成績_2着以内率"] = df_ks["昨年障害成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[1]
 )
+average_value = df_ks["昨年障害成績_2着以内率"].mean()
+df_ks["昨年障害成績_2着以内率"] = df_ks["昨年障害成績_2着以内率"].fillna(average_value)
+
 df_ks["昨年障害成績_3着以内率"] = df_ks["昨年障害成績"].apply(
     lambda x: parse_and_calculate_rates(x, 3)[2]
 )
+average_value = df_ks["昨年障害成績_3着以内率"].mean()
+df_ks["昨年障害成績_3着以内率"] = df_ks["昨年障害成績_3着以内率"].fillna(average_value)
 
 df_ks["通算平地成績_1着率"] = df_ks["通算平地成績"].apply(
     lambda x: parse_and_calculate_rates(x, 5)[0]
@@ -1121,6 +1125,7 @@ df_ks = df_ks[
     [
         "騎手コード",
         "所属コード",
+        "騎手生年",
         "初免許年",
         "見習い区分",
         "本年平地成績_1着率",
@@ -1149,6 +1154,64 @@ save_df_file(str(file_directory), df_ks, "KS")
 summary_ks = summarize_object_columns(df_ks)
 
 
+df_ukc = read_df_file(file_directory, "UKC")
+
+df_ukc["血統登録番号"] = df_ukc["血統登録番号"].fillna(0).astype(int)
+df_ukc["性別コード"] = df_ukc["性別コード"].astype("category")
+df_ukc["毛色コード"] = df_ukc["毛色コード"].fillna("00").astype("category")
+df_ukc["馬記号コード"] = df_ukc["馬記号コード"].fillna("").astype("category")
+df_ukc["血統情報_父馬名"] = df_ukc["血統情報_父馬名"].fillna("").astype("category")
+df_ukc["血統情報_母馬名"] = df_ukc["血統情報_母馬名"].fillna("").astype("category")
+df_ukc["血統情報_母父馬名"] = df_ukc["血統情報_母父馬名"].fillna("").astype("category")
+df_ukc["馬生年月日"] = df_ukc["生年月日"].astype(int)
+
+df_ukc["父馬生年"] = pd.to_numeric(df_ukc["父馬生年"], errors="coerce")
+average_value = df_ukc["父馬生年"].mean()
+df_ukc["父馬生年"] = df_ukc["父馬生年"].fillna(average_value).astype(int)
+
+df_ukc["母馬生年"] = pd.to_numeric(df_ukc["母馬生年"], errors="coerce")
+average_value = df_ukc["母馬生年"].mean()
+df_ukc["母馬生年"] = df_ukc["母馬生年"].fillna(average_value).astype(int)
+
+df_ukc["母父馬生年"] = pd.to_numeric(df_ukc["母父馬生年"], errors="coerce")
+average_value = df_ukc["母父馬生年"].mean()
+df_ukc["母父馬生年"] = df_ukc["母父馬生年"].fillna(average_value).astype(int)
+
+df_ukc["馬主名"] = df_ukc["馬主名"].fillna("").astype("category")
+df_ukc["馬主会コード"] = df_ukc["馬主会コード"].fillna("").astype("category")
+df_ukc["生産者名"] = df_ukc["生産者名"].fillna("").astype("category")
+df_ukc["産地名"] = df_ukc["産地名"].fillna("").astype("category")
+df_ukc["父系統コード"] = df_ukc["父系統コード"].fillna("").astype("category")
+df_ukc["母父系統コード"] = df_ukc["母父系統コード"].fillna("").astype("category")
+df_ukc["データ年月日"] = df_ukc["データ年月日"].astype(int)
+
+df_ukc = df_ukc[
+    [
+        "血統登録番号",
+        "性別コード",
+        "毛色コード",
+        "馬記号コード",
+        "血統情報_父馬名",
+        "血統情報_母馬名",
+        "血統情報_母父馬名",
+        "馬生年月日",
+        "父馬生年",
+        "母馬生年",
+        "母父馬生年",
+        "馬主名",
+        "馬主会コード",
+        "生産者名",
+        "産地名",
+        "父系統コード",
+        "母父系統コード",
+        "データ年月日",
+    ]
+]
+
+save_df_file(str(file_directory), df_ukc, "UKC")
+summary_ukc = summarize_object_columns(df_ukc)
+
+
 # df_cza = read_df_file(file_directory, "CZA")
 # df_csa = read_df_file(file_directory, "CSA")
 # df_cha = read_df_file(file_directory, "CHA")
@@ -1156,7 +1219,6 @@ summary_ks = summarize_object_columns(df_ks)
 # df_joa = read_df_file(file_directory, "JOA")
 # df_kab = read_df_file(file_directory, "KAB")
 # df_kka = read_df_file(file_directory, "KKA")
-# df_ukc = read_df_file(file_directory, "UKC")
 # df_zed = read_df_file(file_directory, "ZED")
 # df_zkb = read_df_file(file_directory, "ZKB")
 # df_srb = read_df_file(file_directory, "SRB")
