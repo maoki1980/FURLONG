@@ -51,7 +51,6 @@ project_path = "../../"
 env_file = os.getenv("ENV_FILE", os.path.join(project_path, ".env"))
 load_dotenv(env_file)
 file_directory = os.getenv("DF_DIR")
-since_year = 2015
 
 # 設定ファイルの読込み
 config = load_config(os.path.join(project_path, "config.yaml"))
