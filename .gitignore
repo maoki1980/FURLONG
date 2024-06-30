@@ -165,5 +165,6 @@ cython_debug/
 # VSCode
 .vscode/
 
-# column_info.json
+# custom json
 column_info*.json
+optimized_params*.json
