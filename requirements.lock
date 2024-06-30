@@ -475,6 +475,8 @@ win32-setctime==1.1.0
     # via loguru
 xgboost==2.1.0
     # via furlong
+xlsxwriter==3.2.0
+    # via furlong
 xxhash==3.4.1
     # via pycaret
 yarl==1.9.4

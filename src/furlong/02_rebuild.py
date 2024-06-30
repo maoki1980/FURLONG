@@ -24,6 +24,9 @@ def save_df_file(file_directory, df, file_category):
 
 # 馬成績のタイムを秒に変換する関数
 def convert_time_to_seconds(time_str):
+    # 欠損値はそのまま返す
+    if pd.isna(time_str):
+        return time_str
     # 分と秒の部分を抽出
     minutes = int(time_str[0])
     seconds = int(time_str[1:])
@@ -570,7 +573,7 @@ df_kyi["他データリンク用キー_前走4競走成績キー"] = df_kyi[
 df_kyi["他データリンク用キー_前走5競走成績キー"] = df_kyi[
     "他データリンク用キー_前走5競走成績キー"
 ].fillna("")
-df_kyi["枠番"] = df_kyi["枠番"].fillna("0").astype("category")
+df_kyi["枠番"] = df_kyi["枠番"].astype("category")
 df_kyi["印コード_総合印"] = df_kyi["印コード_総合印"].fillna("0").astype("category")
 df_kyi["印コード_IDM印"] = df_kyi["印コード_IDM印"].fillna("0").astype("category")
 df_kyi["印コード_情報印"] = df_kyi["印コード_情報印"].fillna("0").astype("category")
@@ -755,20 +758,31 @@ df_sed["競走成績キー"] = df_sed["競走成績キー_血統登録番号"].f
 df_sed["レース条件_馬場状態"] = (
     df_sed["レース条件_馬場状態"].fillna("00").astype("category")
 )
-df_sed["馬成績_着順"] = (
-    pd.to_numeric(df_sed["馬成績_着順"], errors="coerce").fillna("99").astype(int)
-)
-df_sed["馬成績_異常区分"] = df_sed["馬成績_異常区分"].fillna("0").astype("category")
+
+df_sed["馬成績_着順"] = pd.to_numeric(df_sed["馬成績_着順"], errors="coerce")
+average_value = df_sed["馬成績_着順"].mean()
+df_sed["馬成績_着順"] = df_sed["馬成績_着順"].fillna(df_sed["馬成績_着順"]).astype(int)
+
+df_sed["馬成績_異常区分"] = df_sed["馬成績_異常区分"].fillna("").astype("category")
+
+df_sed["馬成績_タイム"] = df_sed["馬成績_タイム"].apply(convert_time_to_seconds)
+
+average_value = df_sed["馬成績_タイム"].mean()
 df_sed["馬成績_タイム"] = (
-    df_sed["馬成績_タイム"].fillna("9999").apply(convert_time_to_seconds)
+    df_sed["馬成績_タイム"].fillna(df_sed["馬成績_タイム"]).astype(float)
 )
+
+df_sed["馬成績_斤量"] = pd.to_numeric(df_sed["馬成績_斤量"], errors="coerce")
+
+average_value = df_sed["馬成績_斤量"].mean()
 df_sed["馬成績_斤量"] = (
-    pd.to_numeric(df_sed["馬成績_斤量"], errors="coerce").fillna(0).astype(float) * 0.1
+    df_sed["馬成績_斤量"].fillna(df_sed["馬成績_斤量"]).astype(float) * 0.1
 )  # 0.1kg単位からkg単位に変換
 
 df_sed["馬成績_確定単勝オッズ"] = pd.to_numeric(
     df_sed["馬成績_確定単勝オッズ"], errors="coerce"
 )
+
 average_value = df_sed["馬成績_確定単勝オッズ"].mean()
 df_sed["馬成績_確定単勝オッズ"] = (
     df_sed["馬成績_確定単勝オッズ"].fillna(average_value).astype(float)

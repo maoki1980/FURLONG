@@ -1,0 +1,17 @@
+resampling_flag: true # 不均衡データに対してオーバーサンプリングを試みるか
+optimize_flag: false # ハイパーパラメーターの最適化を行うか
+prediction_date: "20240630" # 予測したいレースの日付
+initial_dataset_year: "2015" # この年以降のデータをデータセットとして使う
+target_column_name: "複勝" # 予測したい目的変数
+random_seed: 0 # 乱数シード
+fold_no: 5 # 交差検証のFold数
+cost_fp: 100 # 偽陽性のコスト (賭け金額)
+cost_fn: 300 # 偽陰性のコスト (失われた利益)
+num_boost_round: 10000 # デフォルトのイテレーション数
+early_stopping_round: 20 # 早期停止の基準イテレーション数
+oversampling_factor: 1.0 # リサンプリング時に正解ラベル1に対して0をどのくらいまで増やすか
+loky_max_cpu_count: 10 # 使用するCPUのスレッド数
+device_type: "gpu" # GPUを使うか (cpu or gpu)
+verbosity: -1 # ログ出力のレベル
+dpi: 300 # グラフのファイル出力時の解像度
+feature_importance_type: "gain" # 特徴量重要度の指標 (split or gain)

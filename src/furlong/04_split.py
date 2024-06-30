@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
-from utility import summarize_object_columns
+from utility import load_config, summarize_object_columns
 
 
 def store_column_roles_json(df, json_filepath, target_columns, key_columns):
@@ -51,17 +51,26 @@ project_path = "../../"
 env_file = os.getenv("ENV_FILE", os.path.join(project_path, ".env"))
 load_dotenv(env_file)
 file_directory = os.getenv("DF_DIR")
-since_date = int(os.getenv("DF_SINCE"))
-pred_date = int(os.getenv("PRED_DATE"))
-json_save_path = "../../"
+since_year = 2015
+
+# 設定ファイルの読込み
+config = load_config(os.path.join(project_path, "config.yaml"))
+since_year = int(str(config["initial_dataset_year"]))
+pred_date = int(str(config["prediction_date"]))
 
 # データの読込み
 read_file_path = os.path.join(str(file_directory), "ALL_DATA.feather")
 df = pd.read_feather(read_file_path)
+
+# データの日付による絞り込み
+df["IN_年月日"] = pd.to_numeric(df["IN_年月日"], errors="coerce").astype(int)
+df = df[df["IN_年月日"] >= since_year * 10000].reset_index(drop=True)
+df["IN_年月日"] = df["IN_年月日"].astype(str)
+
 df_summary = summarize_object_columns(df)
 
 # 保存先JSONファイルパス
-save_json_path = os.path.join(str(json_save_path), "column_info.json")
+save_json_path = os.path.join(str(project_path), "column_info.json")
 
 # カラムを説明変数と目的変数に振り分けるためのJSONファイルを作成する
 target_columns = [
@@ -80,7 +89,7 @@ key_columns = [
 store_column_roles_json(df, save_json_path, target_columns, key_columns)
 
 # 読込先JSONファイルパス
-read_json_path = os.path.join(str(json_save_path), "column_info_fixed.json")
+read_json_path = os.path.join(str(project_path), "column_info_fixed.json")
 
 # JSONファイルを読み込む
 with open(read_json_path, "r", encoding="utf-8") as file:
@@ -96,7 +105,7 @@ feature_columns = [
     if details["usage"] in ("feature", "key")
 ]
 # 予測データを分離
-df["IN_年月日"] = df["IN_年月日"].astype(int)
+df["IN_年月日"] = pd.to_numeric(df["IN_年月日"], errors="coerce").astype(int)
 df_train = df[(df["_merge"] == 0) & (df["IN_年月日"] < pred_date)].reset_index(
     drop=True
 )
@@ -119,9 +128,9 @@ df_target["単勝穴馬"] = (
     (df_target["OUT_馬成績_着順"] == 1) & (df_target["OUT_馬成績_確定単勝オッズ"] >= 5)
 ).astype(int)
 
-# 3着以内かつ複勝オッズ5倍以上の馬を1とする
+# 3着以内かつ複勝オッズ3倍以上の馬を1とする
 df_target["複勝穴馬"] = (
-    (df_target["OUT_馬成績_着順"] <= 3) & (df_target["OUT_確定複勝オッズ下"] >= 5)
+    (df_target["OUT_馬成績_着順"] <= 3) & (df_target["OUT_確定複勝オッズ下"] >= 3)
 ).astype(int)
 
 # 着順カテゴリを作成する

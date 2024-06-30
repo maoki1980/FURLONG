@@ -49,7 +49,6 @@ project_path = "../../"
 env_file = os.getenv("ENV_FILE", os.path.join(project_path, ".env"))
 load_dotenv(env_file)
 file_directory = os.getenv("DF_DIR")
-since_date = int(os.getenv("DF_SINCE"))
 previous_data = 5  # 何走分のデータを含めるか
 
 df_bac = read_df_file(str(file_directory), "BAC")
@@ -202,12 +201,11 @@ df["IN_レースキー"] = (
     + df["IN_レースキー_日"]
     + df["IN_レースキー_R"]
 )
-
-# データの日付による絞り込み
-df["IN_年月日"] = pd.to_numeric(df["IN_年月日"], errors="coerce").astype(int)
-df = df[df["IN_年月日"] >= since_date].reset_index(drop=True)
+df["IN_レースキー"] = pd.to_numeric(df["IN_レースキー"], errors="coerce")
+df["IN_レースキー"] = df["IN_レースキー"].fillna(0).astype(int)
 
 # 数値に変換してソート
+df["IN_年月日"] = pd.to_numeric(df["IN_年月日"], errors="coerce").astype(int)
 df["IN_発走時間"] = pd.to_numeric(df["IN_発走時間"], errors="coerce").astype(int)
 df = df.sort_values(
     by=["IN_年月日", "IN_発走時間", "IN_馬番"], ascending=[False, True, True]
